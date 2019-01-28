@@ -1,0 +1,27 @@
+version: "3"
+services:
+  web:
+    image: "webhooks"
+    command: "--debug --port <PORT>"
+    ports:
+      - "<PORT>:<PORT>"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "<TESTS_STORAGE_PATH>:/tests"
+      - "<TEMPORAL_CLONE_PATH>:/instances"
+    links:
+      - mongo
+    depends_on:
+      - mongo
+    environment:
+      - GITHUB_API_KEY="<KEY>"
+      - GITHUB_ORG="<ORGANIZATION>"
+      - BROADCAST_SECRET="<SECRET>"
+
+  mongo:
+    image: "mongo:3.4"
+    container_name: "mongo"
+    volumes:
+      - "<DATABASE_PATH>:/data/db"
+    ports:
+      - 27017:27017
