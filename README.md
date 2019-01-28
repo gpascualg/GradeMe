@@ -26,7 +26,13 @@ Now, add this user to the organization you just created. That can be done from: 
 
 ## How
 
-Once you have mongo running (`mongod`), start the webhooks/tests server with
+Once you have mongo running (`mongod`), install all dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the webhooks/tests server with
 
 ```bash
 python start_service.py --github-api-key=<YOUR API KEY> --github-org=<YOUR ORGANIZATION NAME> --broadcast-secret=<SOME RANDOM LETTERS> --mongo-host=localhost
