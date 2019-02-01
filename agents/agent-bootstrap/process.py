@@ -67,7 +67,7 @@ def continue_process(instance, data, mounts):
     return subprocess.check_output(['docker', 'run', 
         '-d', '-t', '--rm',
         '-v', '/instance:/instance',
-        '--mount', 'source=tests,target=/tests,readonly',
+        '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
         agent_name, docker_name])
 
