@@ -15,6 +15,7 @@ from distutils.dir_util import copy_tree
 from os.path import basename
 
 from common.database import Database
+from docker.resultscomm import ResultsListener
 
 
 def update_instance(instance, status, results=[]):
@@ -27,18 +28,12 @@ def update_instance(instance, status, results=[]):
         results
     )
 
-def get_organization_config(org):
-    return orgs.find(
-        {'_id': org},
-        {'_id': 0}
-    )
-
 def continue_process(basedir, org, repo, instance, data, mounts):
     if 'branch' in data:
         if data['branch'] != instance['_id']['branch']:
             update_instance(instance, 'branch-mismatch')
             print('> Skipped due to branch mismatch')
-            return 6
+            return False
 
     if 'max_per_day' in data:
         daily_usage = instance['daily_usage']
@@ -48,7 +43,7 @@ def continue_process(basedir, org, repo, instance, data, mounts):
         if daily_usage[current_date] > data['max_per_day']:
             update_instance(instance, 'out-of-tries')
             print('> No more attempts allowed today')
-            return 8
+            return False
 
         Database().update_daily_usage(
             instance['_id']['org'],
@@ -62,7 +57,7 @@ def continue_process(basedir, org, repo, instance, data, mounts):
     else:
         print('> Non-existing agent')
         update_instance(instance, 'non-existing-agent')
-        return 5
+        return False
 
     with tempfile.TemporaryDirectory(dir='/tests') as tmpdirname:
         copy_tree('/tests', tmpdirname)
@@ -70,12 +65,16 @@ def continue_process(basedir, org, repo, instance, data, mounts):
         mount_dir = mounts['/tests'] + tmpdirname[len('/tests'):]
         instance_dir = mounts['/instances'] + '/' + basename(basedir)
 
-        retcode = subprocess.call(['docker', 'run', '-t', '--rm',
+        # Create a network
+
+        # Run detached
+        docker_id = subprocess.check_output(['docker', 'run', 
+            '-d', '-t', '--rm',
             '-v', mount_dir + ':/tests',
             '-v', instance_dir + ':/instance',
             agent_name, data['execute']])
 
-    return retcode
+    return docker_id
 
 def main(basedir, secret, org, repo, instance, mounts):
     try:
@@ -83,7 +82,7 @@ def main(basedir, secret, org, repo, instance, mounts):
             try:
                 data = yaml.load(fp)
             except:
-                return 4
+                return False
 
         contents = copy.copy(data)
         contents['checksum'] = secret
@@ -92,9 +91,9 @@ def main(basedir, secret, org, repo, instance, mounts):
         if hashlib.sha256(contents).hexdigest() == data['checksum']:
             return continue_process(basedir, org, repo, instance, data, mounts)
         else:
-            return 3
+            return False
     except:
-        return 2
+        return False
 
 
 ######################################################################################
@@ -115,6 +114,7 @@ parser.add_argument('--mount')
 parser.add_argument('--secret')
 args = parser.parse_args()
 
+
 try:
     mounts = {v: k for k,v in (m.split(':') for m in args.mount.split(';'))}
 
@@ -127,22 +127,21 @@ try:
     
     if instance is None:
         update_instance(instance, 'org-repo-mismatch')
-        exitcode = 7
     else:
-        exitcode = main(args.dir, args.secret, args.org, args.repo, instance, mounts)
+        docker_name_or_false = main(args.dir, args.secret, args.org, args.repo, instance, mounts)
 
-    json_path = os.path.join(args.dir, 'results.json')
-    json_results = []
-    try:
-        with open(json_path) as fp:
-            json_results = json.load(fp)
-    except:
-        pass
+        if docker_name_or_false:
+            # Block until we have all results
+            results = ResultsListener('')
+            results.run()
 
-    update_instance(instance, 'done', json_results)
+            # Once we reach here it's done
+            update_instance(instance, 'done', results.messages)
+            exitcode = 0
+
+            # TODO(gpascualg): Check exit code using docker_name_or_false
 except:
     update_instance(instance, 'execution-error')
-    exitcode = 1
 
 shutil.rmtree(args.dir)
 sys.exit(exitcode)

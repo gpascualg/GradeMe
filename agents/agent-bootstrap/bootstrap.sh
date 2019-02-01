@@ -11,4 +11,6 @@ git checkout -qf ${GITHUB_COMMIT}
 echo "> Start processing"
 
 cd /opt
-exec python3 process.py --dir $WORKDIR --org ${GITHUB_ORGANIZATION} --repo ${GITHUB_REPOSITORY} --org-id ${GITHUB_ORGANIZATION_ID} --repo-id ${GITHUB_REPOSITORY_ID} --hash ${GITHUB_COMMIT} --branch ${GITHUB_BRANCH} --mount="${DOCKER_MOUNT_PATHS}"
+exec python3 process.py --dir $WORKDIR --org ${GITHUB_ORGANIZATION} --repo ${GITHUB_REPOSITORY} \
+    --org-id ${GITHUB_ORGANIZATION_ID} --repo-id ${GITHUB_REPOSITORY_ID} --hash ${GITHUB_COMMIT} \
+    --branch ${GITHUB_BRANCH} --mount="${DOCKER_MOUNT_PATHS}" --secret=${AUTOGRADER_SECRET}

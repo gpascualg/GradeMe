@@ -13,7 +13,8 @@ RUN apk --update add --no-cache python3 py3-pip git lapack libstdc++ freetype li
 VOLUME ["/tests", "/instance"]
 
 WORKDIR /opt
-COPY bootstrap.sh /opt/
-COPY scriptify.py /opt/
+COPY agents/agent-python3/bootstrap.sh /opt/
+COPY agents/agent-python3/scriptify.py /opt/
+COPY servers/docker /opt/
 ENTRYPOINT ["/opt/bootstrap.sh"]
 CMD [""]

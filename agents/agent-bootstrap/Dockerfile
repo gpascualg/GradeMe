@@ -24,4 +24,5 @@ WORKDIR /opt
 COPY agents/agent-bootstrap/bootstrap.sh /opt/
 COPY agents/agent-bootstrap/process.py /opt/
 COPY servers/common /opt/
+COPY servers/docker /opt/
 CMD ["/opt/bootstrap.sh"]
