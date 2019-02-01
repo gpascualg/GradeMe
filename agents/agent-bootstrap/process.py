@@ -9,6 +9,7 @@ import shutil
 import copy
 import argparse
 import datetime
+import random
 
 from pymongo import MongoClient
 from distutils.dir_util import copy_tree
@@ -28,7 +29,7 @@ def update_instance(instance, status, results=[]):
         results
     )
 
-def continue_process(basedir, org, repo, instance, data, mounts):
+def continue_process(instance, data, mounts):
     if 'branch' in data:
         if data['branch'] != instance['_id']['branch']:
             update_instance(instance, 'branch-mismatch')
@@ -59,37 +60,31 @@ def continue_process(basedir, org, repo, instance, data, mounts):
         update_instance(instance, 'non-existing-agent')
         return False
 
-    with tempfile.TemporaryDirectory(dir='/tests') as tmpdirname:
-        copy_tree('/tests', tmpdirname)
-        
-        mount_dir = mounts['/tests'] + tmpdirname[len('/tests'):]
-        instance_dir = mounts['/instances'] + '/' + basename(basedir)
+    docker_name = os.environ['DOCKER_NAME']
+    volume_name = os.environ['GITHUB_ORGANIZATION_ID'] + '-' + data['execute']
 
-        # Create a network
+    # Run detached
+    return subprocess.check_output(['docker', 'run', 
+        '-d', '-t', '--rm',
+        '-v', '/instance:/instance',
+        '--mount', 'source=tests,target=/tests,readonly',
+        '--network', 'results',
+        agent_name, docker_name])
 
-        # Run detached
-        docker_id = subprocess.check_output(['docker', 'run', 
-            '-d', '-t', '--rm',
-            '-v', mount_dir + ':/tests',
-            '-v', instance_dir + ':/instance',
-            agent_name, data['execute']])
-
-    return docker_id
-
-def main(basedir, secret, org, repo, instance, mounts):
+def main(instance, mounts):
     try:
-        with open(basedir + '/code/.autograder.yml') as fp:
+        with open('/instance/code/.autograder.yml') as fp:
             try:
                 data = yaml.load(fp)
             except:
                 return False
 
         contents = copy.copy(data)
-        contents['checksum'] = secret
+        contents['checksum'] = os.environ['AUTOGRADER_SECRET']
         contents = yaml.dump(contents, encoding='utf-8')
 
         if hashlib.sha256(contents).hexdigest() == data['checksum']:
-            return continue_process(basedir, org, repo, instance, data, mounts)
+            return continue_process(instance, data, mounts)
         else:
             return False
     except:
@@ -102,46 +97,34 @@ def main(basedir, secret, org, repo, instance, mounts):
 # TODO(gpascualg): Make mongodb host configurable
 Database().initialize('mongo')
 
-parser = argparse.ArgumentParser(description='Options')
-parser.add_argument('--dir')
-parser.add_argument('--org')
-parser.add_argument('--repo')
-parser.add_argument('--org-id')
-parser.add_argument('--repo-id')
-parser.add_argument('--hash')
-parser.add_argument('--branch')
-parser.add_argument('--mount')
-parser.add_argument('--secret')
-args = parser.parse_args()
-
-
+exitcode = 1
 try:
-    mounts = {v: k for k,v in (m.split(':') for m in args.mount.split(';'))}
-
     instance = Database().get_instance(
-        args.org_id,
-        args.repo_id,
-        args.hash,
-        args.branch
+        os.environ['GITHUB_ORGANIZATION_ID'],
+        os.environ['GITHUB_REPOSITORY_ID'],
+        os.environ['GITHUB_COMMIT'],
+        os.environ['GITHUB_BRANCH']
     )
     
     if instance is None:
         update_instance(instance, 'org-repo-mismatch')
     else:
-        docker_name_or_false = main(args.dir, args.secret, args.org, args.repo, instance, mounts)
+        docker_id_or_false = main(instance, mounts)
 
-        if docker_name_or_false:
+        if docker_id_or_false:
+            # Make sure noone can connect directly
+            random_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+
             # Block until we have all results
             results = ResultsListener('')
-            results.run()
+            results.run(os.environ['DOCKER_NAME'], 9999, random_secret)
 
             # Once we reach here it's done
             update_instance(instance, 'done', results.messages)
             exitcode = 0
 
-            # TODO(gpascualg): Check exit code using docker_name_or_false
+            # TODO(gpascualg): Check exit code using docker_id_or_false
 except:
     update_instance(instance, 'execution-error')
 
-shutil.rmtree(args.dir)
 sys.exit(exitcode)

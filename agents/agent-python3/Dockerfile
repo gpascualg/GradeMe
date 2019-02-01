@@ -10,7 +10,7 @@ RUN apk --update add --no-cache python3 py3-pip git lapack libstdc++ freetype li
 	ln -s /usr/include/locale.h /usr/include/xlocale.h && \
 	rm -rf /var/cache/apk/*
 
-VOLUME ["/tests", "/instance"]
+VOLUME ["/instance"]
 
 WORKDIR /opt
 COPY agents/agent-python3/bootstrap.sh /opt/

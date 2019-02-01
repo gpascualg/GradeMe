@@ -3,6 +3,9 @@ from multiprocessing import Pool
 import subprocess
 import os
 import json
+import tempfile
+
+from os.path import basename
 
 from ..common.database import Database
 
@@ -11,24 +14,6 @@ def retrieve_stdout(command):
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = proc.stdout.read()
     return output.decode('utf-8').strip()
-
-
-def fetch_current_docker():
-    docker_id = os.environ.get('DOCKER_ID', 
-        retrieve_stdout(['cat', '/proc/1/cpuset']).split('/')[-1])
-    msg = retrieve_stdout(['docker', 'inspect', docker_id])
-    msg = msg[:msg.rfind(']') + 1]
-    docker_info = json.loads(msg)
-
-    try:
-        network_name = list(docker_info[0]['NetworkSettings']['Networks'].keys())[0]
-        mounts = docker_info[0]['Mounts']
-        mounts = {mount['Destination']: mount['Source'] for mount in mounts}
-
-        return network_name, mounts
-    except:
-        return None, {}
-
 
 class Jobs(object):
     __instance = None
@@ -42,10 +27,12 @@ class Jobs(object):
         config = Database().get_config()
         self.oauth_token = config['oauth_token']
         self.pool = Pool(config['parallel_jobs'])
-        self.network_name, self.mounts = fetch_current_docker()
 
     def __process(self, meta):
-        return meta, retrieve_stdout(['docker', 'run', '-td',
+        instance_path = tempfile.mkdtemp(dir=self.mounts['/instances'])
+        instance_name = basename(instance_path)
+
+        return meta, retrieve_stdout(['docker', 'run', '-td', '--rm',
             '-e', 'GITHUB_BRANCH=' + meta['branch'],
             '-e', 'GITHUB_ORGANIZATION=' + meta['org']['name'],
             '-e', 'GITHUB_REPOSITORY=' + meta['repo']['name'],
@@ -53,12 +40,13 @@ class Jobs(object):
             '-e', 'GITHUB_REPOSITORY_ID=' + meta['repo']['id'],
             '-e', 'GITHUB_COMMIT=' + meta['hash'],
             '-e', 'OAUTH_TOKEN=' + self.oauth_token,
-            '-e', 'DOCKER_MOUNT_PATHS=' + self.mounts['/tests'] + ':/tests' + ';' + self.mounts['/instances'] + ':/instances',
+            '-e', 'DOCKER_NAME=' + instance_name,
             '-e', 'AUTOGRADER_SECRET=' + Database().get_organization_config(meta['org']['id'])['secret'],
             '-v', '/var/run/docker.sock:/var/run/docker.sock',
-            '-v', self.mounts['/tests'] + ':/tests',
-            '-v', self.mounts['/instances'] + ':/instances',
-            '--network', self.network_name,
+            '--mount', 'type=tmpfs,destination=/instance',
+            '--network', 'system',
+            '--network', 'results', # TODO(gpascualg): Can we have two networks here?
+            '--name', instance_name,
             'agent-bootstrap'])
     
     def __once_done(self, result):

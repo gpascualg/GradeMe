@@ -1,7 +1,7 @@
 version: "3"
 services:
   web:
-    image: "webhooks"
+    image: "autograder"
     command: "--debug --port <PORT>"
     ports:
       - "<PORT>:<PORT>"
@@ -13,6 +13,8 @@ services:
       - mongo
     depends_on:
       - mongo
+    networks:
+      - backend
     environment:
       - GITHUB_API_KEY="<KEY>"
       - GITHUB_ORG="<ORGANIZATION>"
@@ -25,3 +27,12 @@ services:
       - "<DATABASE_PATH>:/data/db"
     ports:
       - 27017:27017
+    networks:
+      - backend
+
+networks:
+  system:
+    driver: bridge
+  results:
+    driver: overlay
+    internal: true
