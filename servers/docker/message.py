@@ -2,6 +2,8 @@ import hmac
 import hashlib
 import json
 
+from .message_type import MessageType
+
 
 class Message(object):
     def __init__(self, msg_type=None, data=None, digest=None):
@@ -46,18 +48,39 @@ class Message(object):
         digest = hmac.new(secret, packed, hashlib.sha256).digest()
         return packed + digest, digest
 
-    def unpack(self, client):
+    def buffer_size(self):
+        return len(self.__buffer)
+
+    def read_pending(self):
+        if self.__step == 0:
+            return 1
+
+        if self.__step == 1:
+            return 4 - self.buffer_size()
+
+        if self.__step == 2:
+            return self.__datasize - self.buffer_size()
+
+        if self.__step == 3:
+            return 32 - self.buffer_size()
+
+        return 0
+
+    def unpack(self, data):
         # MESSAGE TYPE
         if self.__step == 0:
-            self.__buffer += client.recv(1)
+            self.__buffer += data
+            if self.buffer_size() < 1: # If client closed connection
+                return False
+
             self.__type = MessageType(self.__buffer[0])
             self.__step += 1
             self.__buffer = b''
 
         # DATA SIZE
         elif self.__step == 1:
-            self.__buffer += client.recv(4 - len(self.__buffer))
-            if len(self.__buffer) < 4:
+            self.__buffer += data
+            if self.buffer_size() < 4:
                 return False
 
             self.__datasize = \
@@ -71,8 +94,8 @@ class Message(object):
 
         # DATA
         elif self.__step == 2:
-            self.__buffer += client.recv(self.__datasize - len(self.__buffer))
-            if len(self.__buffer) < self.__datasize:
+            self.__buffer += data
+            if self.buffer_size() < self.__datasize:
                 return False
 
             self.__data = json.loads(self.__buffer)
@@ -81,8 +104,8 @@ class Message(object):
         
         # DIGEST
         elif self.__step == 3:
-            self.__buffer += client.recv(32 - len(self.__buffer))
-            if len(self.__buffer) < 32:
+            self.__buffer += data
+            if self.buffer_size() < 32:
                 return False
 
             self.__digest = self.__buffer

@@ -29,7 +29,16 @@ class ResultsListener(object):
             read_ready, _, _ = select.select(self.__connections, [], [], 1.0)
             for sock in read_ready:
 
-                if msg.unpack(sock):
+                read_size = msg.read_pending()
+                data = sock.recv(read_size)
+
+                # Disconnected
+                if not data:
+                    self.running = False
+                    sock.close()
+                    break
+
+                if msg.unpack(data):
                     if not msg.is_valid(self.secret):
                         self.running = False
                         sock.close()
@@ -54,4 +63,4 @@ class ResultsListener(object):
         self.__poll()
 
     def json(self):
-        return [{"type": msg.Type(), "data": msg.Data()} for msg in self.__messages]
+        return [{"type": msg.Type().value, "data": msg.Data()} for msg in self.__messages]
