@@ -16,7 +16,7 @@ from distutils.dir_util import copy_tree
 from os.path import basename
 
 from common.database import Database
-from docker.resultscomm import ResultsListener
+from docker import ResultsListener
 
 
 def update_instance(instance, status, results=[]):
@@ -120,7 +120,7 @@ try:
             results.run(os.environ['DOCKER_NAME'], 9999, random_secret)
 
             # Once we reach here it's done
-            update_instance(instance, 'done', results.messages)
+            update_instance(instance, 'done', results.json())
             exitcode = 0
 
             # TODO(gpascualg): Check exit code using docker_id_or_false
