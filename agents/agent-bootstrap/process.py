@@ -29,7 +29,7 @@ def update_instance(instance, status, results=[]):
         results
     )
 
-def continue_process(instance, data, mounts):
+def continue_process(instance, data, mounts, random_secret):
     if 'branch' in data:
         if data['branch'] != instance['_id']['branch']:
             update_instance(instance, 'branch-mismatch')
@@ -69,7 +69,7 @@ def continue_process(instance, data, mounts):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, docker_name])
+        agent_name, docker_name, random_secret])
 
 def main(instance, mounts):
     try:
@@ -109,12 +109,11 @@ try:
     if instance is None:
         update_instance(instance, 'org-repo-mismatch')
     else:
-        docker_id_or_false = main(instance, mounts)
+        # Make sure noone can connect directly
+        random_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+        docker_id_or_false = main(instance, mounts, random_secret)
 
         if docker_id_or_false:
-            # Make sure noone can connect directly
-            random_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
-
             # Block until we have all results
             results = ResultsListener('')
             results.run(os.environ['DOCKER_NAME'], 9999, random_secret)
