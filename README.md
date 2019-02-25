@@ -22,14 +22,24 @@ Now, add this user to the organization you just created. That can be done from: 
 ## What you need
 
 * Python 3.x
-* MongoDB
+* Docker (for mongo)
 
 ## How
 
-Once you have mongo running (`mongod`), install all dependencies
-
+Install required Python libraries
 ```bash
 pip install -r requirements.txt
+```
+
+Create docker networks for test execution
+```bash
+docker network create --driver bridge backend
+docker network create --internal results
+```
+
+Fire up mongo on Docker (**note** change /tmp/data if you want permanent storage)
+```bash
+docker run --name mongo -p 27017:27017 -v /tmp/data:/data/db --rm --network backend -d mongo
 ```
 
 Start the webhooks/tests server with

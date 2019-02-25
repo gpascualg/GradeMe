@@ -2,6 +2,7 @@ from flask import Flask, request, session, g, abort, render_template, url_for, f
 from github import Github
 from ipaddress import ip_address, ip_network
 
+import threading
 import argparse
 import requests
 import json
@@ -10,6 +11,7 @@ import os
 from ..common.database import Database
 from ..common.broadcaster import Broadcaster
 from .jobs import Jobs
+from .cli import GradeMeCLI
 
 
 def github_membership_webhook(payload):
@@ -84,9 +86,12 @@ def github_push_webhook(payload):
     sha = payload['after']
 
     # The following authors are ignored
-    if Database().get_organization_config(org)['skip_admin_push']:
-        if author in Database().get_organization_admins(org):
-            return json.dumps({"status": "skipped"})
+    try:
+        if Database().get_organization_config(org)['skip_admin_push']:
+            if author in Database().get_organization_admins(org):
+                return json.dumps({"status": "skipped"})
+    except:
+        return json.dumps({"status": "non-existant-org"})
 
     # Does this repository already exist?
     if Database().get_repository(org, repo) is None:
@@ -149,12 +154,36 @@ def github_webhook():
 
     return json.dumps({"status": "skipped"})
 
+def simulate_webhook():
+    payload = {
+        'ref': 'gpascualg/GradeMe/dev',
+        'after': 'd5d23c937b135d7c8c92e2af63400918622b0c87',
+        'repository': {
+            'id': 321,
+            'name': 'GradeMe',
+            'owner': {
+                'id': 123,
+                'name': 'gpascualg'
+            }
+        },
+        'sender': {
+            'id': 123,
+            'name': 'gpascualg'
+        },
+        'commits': [
+            {
+                'id': 'd5d23c937b135d7c8c92e2af63400918622b0c87',
+                'message': 'Wrong network name'
+            }
+        ]
+    }
+    print(github_push_webhook(payload))
 
 def main():
     # New organizations to use
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
-    parser.add_argument('--github-api-key', help='API key for the master user')
-    parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)')
+    parser.add_argument('--github-api-key', required=True, help='API key for the master user')
+    parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)', type=int)
     parser.add_argument('--broadcast-host', default='localhost', help='Docker intercomunnication tool host')
     parser.add_argument('--broadcast-port', type=int, default=6000, help='Docker intercomunication tool port')
     parser.add_argument('--broadcast-secret', type=str, help='Shared secret between dockers')
@@ -163,6 +192,7 @@ def main():
     parser.add_argument('--host', type=str, default='localhost', help='Server hostname')
     parser.add_argument('--port', type=int, default=80, help='Server port')
     parser.add_argument('--debug', action='store_true', help='Run server in debug mode')
+    parser.add_argument('--cli', action='store_true', help='Run CLI')
     args = parser.parse_args()
 
     # Arguments may be submitted in ENV variables (specially in Docker via docker-compose)
@@ -179,17 +209,17 @@ def main():
     # Configure Flask app
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'iuy81273ADIwqe2/·gqeWÇQE239qje'
+
+    # Save config and api key
+    Database().ensure_configured()
+    Database().save_oauth_key(args.github_api_key)
     
     # Create, if not-existing, organizations
     for org in args.github_org or []:
         Database().create_organization_if_not_exists(org)
 
     # Make sure we have all users, admins, etc.
-    if not args.no_github_init:
-        if not args.github_api_key:
-            print('You must submit a Github API Key')
-            return
-        
+    if not args.no_github_init:        
         # Github API
         g = Github(args.github_api_key)
 
@@ -218,6 +248,17 @@ def main():
         print(limits.core.remaining)
         print(limits.core.reset)
 
+    if args.cli:
+        simulate_webhook()
+        # cli = GradeMeCLI(
+        #     on_run_webhook=simulate_webhook
+        # )
+        # thread = threading.Thread(target=cli.run)
+        # thread.start()
+
     app.run(host=args.host, port=args.port, debug=args.debug)
     Broadcaster().close()
+
+    if args.cli:
+        thread.join()
 

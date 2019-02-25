@@ -10,13 +10,14 @@ import copy
 import argparse
 import datetime
 import random
+import pymongo
 
 from pymongo import MongoClient
 from distutils.dir_util import copy_tree
 from os.path import basename
 
-from common.database import Database
-from docker import ResultsListener
+from servers.common.database import Database
+from servers.docker import ResultsListener
 
 
 def update_instance(instance, status, results=[]):
@@ -123,6 +124,8 @@ try:
             exitcode = 0
 
             # TODO(gpascualg): Check exit code using docker_id_or_false
+except pymongo.errors.ServerSelectionTimeoutError:
+    print("FATAL ERROR > COULD NOT REACH MONGODB")
 except:
     update_instance(instance, 'execution-error')
 

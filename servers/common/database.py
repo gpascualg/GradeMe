@@ -58,6 +58,24 @@ class Database(object):
     def get_config(self):
         return self.config.find_one()
 
+    def ensure_configured(self):
+        config = self.config.find_one()
+        if not config:
+            config = {
+                'oauth_token': None,
+                'parallel_jobs': 1
+            }
+            self.config.insert_one(config)
+            self.__clear_cache(self.get_config)
+
+    def save_oauth_key(self, key):
+        config = self.config.find_one()
+        self.config.update_one(
+            {'_id': config['_id']}, 
+            {'$set': {'oauth_token': key}}
+        )
+        self.__clear_cache(self.get_config)
+
     def create_organization_if_not_exists(self, org):
         if not self.get_organization_config(org):
             self.orgs.insert_one({
@@ -67,6 +85,7 @@ class Database(object):
             })
 
             self.__clear_cache(self.get_organizations)
+            self.__clear_cache(self.get_organization_config)
 
     @cache
     def get_organizations(self):
