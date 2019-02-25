@@ -42,6 +42,11 @@ Fire up mongo on Docker (**note** change /tmp/data if you want permanent storage
 docker run --name mongo -p 27017:27017 -v /tmp/data:/data/db --rm --network backend -d mongo
 ```
 
+Build now (and everytime you change agents), build the dockers (you might need `sudo`)
+```bash
+./build.sh
+```
+
 Start the webhooks/tests server with
 
 ```bash
