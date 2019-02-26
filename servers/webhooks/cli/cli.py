@@ -1,27 +1,23 @@
 import npyscreen
 import curses
 
+from . import mock
 
 class GradeMeCLI(npyscreen.NPSAppManaged):
-    def __init__(self, on_run_webhook):
-        self.on_run_webhook = on_run_webhook
-        
+    def __init__(self, GithubMethods):
+        self.GithubMethods = GithubMethods
         npyscreen.NPSAppManaged.__init__(self)
 
     def onStart(self):
-        self.registerForm("MAIN", MainForm(
-            self.on_run_webhook
-        ))
+        self.registerForm("MAIN", MainForm(self.GithubMethods))
 
 class MainForm(npyscreen.FormWithMenus):
-    def __init__(self, on_run_webhook):
-        self.on_run_webhook = on_run_webhook
-        self.webhook_status = {}
-
+    def __init__(self, GithubMethods):
+        self.GithubMethods = GithubMethods
         npyscreen.FormWithMenus.__init__(self)
 
     def _on_run_webhook(self):
-        self.webhook_status.value = self.on_run_webhook()
+        self.webhook_status.value = mock.push_webhook(self.GithubMethods)
 
     def create(self):
         self.add(npyscreen.TitleText, name = "Welcome:", value= "Access MENU by pressing CTRL+X." )

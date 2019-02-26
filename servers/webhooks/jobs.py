@@ -59,6 +59,6 @@ class Jobs(object):
     
     def post(self, meta):
         if os.environ.get('DISABLE_POOL'):
-            return self.__once_done(__process(meta))
+            return self.__once_done(process_job(meta, self.oauth_token))
         else:
             return self.pool.apply_async(process_job, (meta, self.oauth_token), callback=self.__once_done)
