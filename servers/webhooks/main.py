@@ -15,47 +15,50 @@ from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
 
 
-
-def github_webhook():
-    # Enforce IP address
-    src_ip = ip_address(
-        u'{}'.format(
-            request.headers.get('X-Forwarded-For', 
-                request.headers.get('X-Real-IP', request.remote_addr)
+def setup_app_routes(app):    
+    @app.route('/', methods=['POST'])
+    def github_webhook():
+        # Enforce IP address
+        src_ip = ip_address(
+            u'{}'.format(
+                request.headers.get('X-Forwarded-For', 
+                    request.headers.get('X-Real-IP', request.remote_addr)
+                )
             )
         )
-    )
-    whitelist = requests.get('https://api.github.com/meta', verify=False).json()['hooks']
 
-    for valid_ip in whitelist:
-        if src_ip in ip_network(valid_ip):
-            break
-    else:
-        abort(403)
+        # TODO(gpascualg): Cache this IPs, github won't be constantly changing them
+        whitelist = requests.get('https://api.github.com/meta', verify=False).json()['hooks']
 
-    event = request.headers.get('X-GitHub-Event', 'ping')
-    if event == 'ping':
-        return json.dumps({'msg': 'pong'})
-    
-    # Gather data
-    try:
-        payload = request.get_json()
-    except Exception:
-        abort(400)
+        for valid_ip in whitelist:
+            if src_ip in ip_network(valid_ip):
+                break
+        else:
+            abort(403)
+
+        event = request.headers.get('X-GitHub-Event', 'ping')
+        if event == 'ping':
+            return json.dumps({'msg': 'pong'})
         
-    if payload is None:
-        abort(202)
-    
-    if event == 'membership':
-        return GithubMethods.github_membership_webhook(payload)
-    elif event == 'team_add':
-        return GithubMethods.github_team_add_webhook(payload)
-    elif event == 'push':
-        return GithubMethods.github_push_webhook(payload)
-    elif event == 'organization':
-        return GithubMethods.github_organization_webhook(payload)
+        # Gather data
+        try:
+            payload = request.get_json()
+        except Exception:
+            abort(400)
+            
+        if payload is None:
+            abort(202)
+        
+        if event == 'membership':
+            return GithubMethods.github_membership_webhook(payload)
+        elif event == 'team_add':
+            return GithubMethods.github_team_add_webhook(payload)
+        elif event == 'push':
+            return GithubMethods.github_push_webhook(payload)
+        elif event == 'organization':
+            return GithubMethods.github_organization_webhook(payload)
 
-    return json.dumps({"status": "skipped"})
+        return json.dumps({"status": "skipped"})
 
 
 def main():
@@ -139,5 +142,6 @@ def main():
     pool = ThreadPool(1)
     pool.apply_async(cli.run, callback=lambda _: os.kill(os.getpid(), 9))
 
-    # Done
+    # Setup app and run it
+    setup_app_routes(app)
     app.run(host=args.host, port=args.port, debug=args.debug)
