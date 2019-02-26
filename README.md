@@ -59,6 +59,14 @@ For example:
 python start_service.py --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
 ```
 
+Processing tests synchronously instead of in a processes pool can be achieved by setting the environment variable `DISABLE_POOL` to 1, for example:
+
+```bash
+DISABLE_POOL=1 python start_service.py --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
+```
+
+This proves to be useful when debugging `Job`s or blocking for tests completion.
+
 # Running with docker
 
 ## What you need
