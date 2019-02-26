@@ -45,7 +45,7 @@ def main():
     # Load tests
     test_loader = unittest.TestLoader()
     test_loader.sortTestMethodsUsing = None
-    testsuite = test_loader.discover('/tests/unittest/')
+    testsuite = test_loader.discover('/tests/_/unittest/')
 
     # Drop privilegies (so /tests is no longer readable)
     drop_privileges()

@@ -1,11 +1,12 @@
 from flask import Flask, request, session, g, abort, render_template, url_for, flash, redirect
 from github import Github
 from ipaddress import ip_address, ip_network
+from multiprocessing.pool import ThreadPool
 
-import threading
 import argparse
 import requests
 import json
+import sys
 import os
 
 from ..common.database import Database
@@ -177,13 +178,14 @@ def simulate_webhook():
             }
         ]
     }
-    print(github_push_webhook(payload))
+    return github_push_webhook(payload)
 
 def main():
     # New organizations to use
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--github-api-key', required=True, help='API key for the master user')
-    parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)', type=int)
+    parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)', type=str)
+    parser.add_argument('--github-org-id', action='append', help='Initial Github organitzation(s)', type=int)
     parser.add_argument('--broadcast-host', default='localhost', help='Docker intercomunnication tool host')
     parser.add_argument('--broadcast-port', type=int, default=6000, help='Docker intercomunication tool port')
     parser.add_argument('--broadcast-secret', type=str, help='Shared secret between dockers')
@@ -192,7 +194,6 @@ def main():
     parser.add_argument('--host', type=str, default='localhost', help='Server hostname')
     parser.add_argument('--port', type=int, default=80, help='Server port')
     parser.add_argument('--debug', action='store_true', help='Run server in debug mode')
-    parser.add_argument('--cli', action='store_true', help='Run CLI')
     args = parser.parse_args()
 
     # Arguments may be submitted in ENV variables (specially in Docker via docker-compose)
@@ -215,7 +216,7 @@ def main():
     Database().save_oauth_key(args.github_api_key)
     
     # Create, if not-existing, organizations
-    for org in args.github_org or []:
+    for org in args.github_org_id or []:
         Database().create_organization_if_not_exists(org)
 
     # Make sure we have all users, admins, etc.
@@ -223,13 +224,19 @@ def main():
         # Github API
         g = Github(args.github_api_key)
 
-        for org_name in Database().get_organizations():
+        orgs = list(set(list(Database().get_organizations()) + args.github_org))
+        for org_name in orgs:
             print('Updating organization {}'.format(org_name))
 
+            # Get org and ensure it is created
             org = g.get_organization(org_name)
+            Database().create_organization_if_not_exists(org.id)
+
+            # Update admins
             for admin in org.get_members(role='admin'):
                 Database().Try().add_organization_member(org.id, admin.id, 'admin')
 
+            # Update teams
             for team in org.get_teams():
                 print('\tUpdating team {}'.format(team.name))
 
@@ -248,17 +255,12 @@ def main():
         print(limits.core.remaining)
         print(limits.core.reset)
 
-    if args.cli:
-        simulate_webhook()
-        # cli = GradeMeCLI(
-        #     on_run_webhook=simulate_webhook
-        # )
-        # thread = threading.Thread(target=cli.run)
-        # thread.start()
+    # Command line and info
+    cli = GradeMeCLI(
+        on_run_webhook=simulate_webhook
+    )
+    pool = ThreadPool(1)
+    pool.apply_async(cli.run, callback=lambda _: os.kill(os.getpid(), 9))
 
+    # Done
     app.run(host=args.host, port=args.port, debug=args.debug)
-    Broadcaster().close()
-
-    if args.cli:
-        thread.join()
-

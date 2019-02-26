@@ -256,7 +256,7 @@ class Database(object):
             },
             {
                 '_id': 1,
-                'max_per_day': 1,
+                'daily_usage': 1,
                 'instances.$': 1
             }
         )

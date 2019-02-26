@@ -80,3 +80,13 @@ Once it's ready, run it:
 ```bash
 ./run.sh
 ```
+
+# Creating tests
+
+Each organization must have its own docker volume for the data. Suppose your organization name is "TNUI-UB" and your tests to be executed are "tests-assignment-2018". The following is to be done:
+
+```bash
+docker run -ti --rm --mount source=TNUI-UB-tests-assignment-2018,target=/tests alpine/git clone <TESTS_GIT_URL> /tests/_
+```
+
+Notice how the `source` argument is composed of `<ORGANIZATION>-<TESTS>`.
