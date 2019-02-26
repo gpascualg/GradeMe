@@ -10,7 +10,6 @@ import sys
 import os
 
 from ..common.database import Database
-from ..common.broadcaster import Broadcaster
 from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
 
@@ -84,9 +83,6 @@ def main():
 
     # Create databse it now
     Database.initialize(args.mongo_host)
-
-    # Start broadcaster
-    Broadcaster().run(args.broadcast_host, args.broadcast_port, args.broadcast_secret.encode('utf-8'))
 
     # Configure Flask app
     app = Flask(__name__)
