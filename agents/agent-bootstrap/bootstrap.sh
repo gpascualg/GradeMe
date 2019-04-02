@@ -3,7 +3,7 @@
 echo "> Start clone ${GITHUB_ORGANIZATION}/${GITHUB_REPOSITORY}"
 
 echo -e "machine github.com login ${OAUTH_TOKEN}" >> $HOME/.netrc
-git clone --depth=50 --branch=${GITHUB_BRANCH} https://github.com/${GITHUB_ORGANIZATION}/${GITHUB_REPOSITORY}.git /instance/code
+GIT_TERMINAL_PROMPT=0 git clone --depth=50 --branch=${GITHUB_BRANCH} https://github.com/${GITHUB_ORGANIZATION}/${GITHUB_REPOSITORY}.git /instance/code
 cd /instance/code
 git checkout -qf ${GITHUB_COMMIT}
 
