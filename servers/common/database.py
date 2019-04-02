@@ -76,10 +76,11 @@ class Database(object):
         )
         self.__clear_cache(self.get_config)
 
-    def create_organization_if_not_exists(self, org):
-        if not self.get_organization_config(org):
+    def create_organization_if_not_exists(self, org_id, org_name):
+        if not self.get_organization_config(org_id):
             self.orgs.insert_one({
-                '_id': org,
+                '_id': org_id,
+                'name': org_name,
                 'secret': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
                 'skip_admin_push': True
             })
@@ -90,6 +91,10 @@ class Database(object):
     @cache
     def get_organizations(self):
         return (o['_id'] for o in self.orgs.find({}))
+
+    @cache
+    def get_organizations_name(self):
+        return (o['name'] for o in self.orgs.find({}))
 
     @cache
     def get_organization_config(self, org):

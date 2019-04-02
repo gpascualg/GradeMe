@@ -5,6 +5,8 @@ from ..jobs import Jobs
 
 
 class GithubMethods(object):
+    MOCK_ORG_ID = None
+
     @staticmethod
     def github_membership_webhook(payload):
         action = payload['action']
@@ -86,7 +88,7 @@ class GithubMethods(object):
                 if author in Database().get_organization_admins(org):
                     return json.dumps({"status": "skipped"})
         except:
-            return json.dumps({"status": "non-existant-org"})
+            return json.dumps({"status": "non-existant-org: {}".format(org)})
 
         # Does this repository already exist?
         if Database().get_repository(org, repo) is None:

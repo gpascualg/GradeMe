@@ -94,14 +94,14 @@ def main():
     
     # Create, if not-existing, organizations
     for org in args.github_org_id or []:
-        Database().create_organization_if_not_exists(org)
+        Database().create_organization_if_not_exists(org, 'fake-org-{}'.format(org))
 
     # Make sure we have all users, admins, etc.
     if not args.no_github_init:        
         # Github API
         g = Github(args.github_api_key)
 
-        orgs = list(set(list(Database().get_organizations()) + args.github_org))
+        orgs = list(set(list(Database().get_organizations_name()) + (args.github_org or [])))
         for org_name in orgs:
             print('Updating organization {}'.format(org_name))
 
@@ -131,6 +131,10 @@ def main():
         print(limits.core.limit)
         print(limits.core.remaining)
         print(limits.core.reset)
+
+    # Mocking purposes
+    if args.github_org_id:
+        GithubMethods.MOCK_ORG_ID = args.github_org_id[0]
 
     # Command line and info
     cli = GradeMeCLI(GithubMethods)
