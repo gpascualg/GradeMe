@@ -6,6 +6,7 @@ class Broadcaster(object):
     __instance = None
     
     def __new__(cls):
+	
         if Broadcaster.__instance is None:
             Broadcaster.__instance = object.__new__(cls)
             

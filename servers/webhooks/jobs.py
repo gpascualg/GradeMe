@@ -1,12 +1,15 @@
 from multiprocessing import Pool
 
+
+
+#importar RedisBC
 import subprocess
 import os
 import json
 import tempfile
 
 from os.path import basename
-
+from ..common.redisbc import RedisBC
 from ..common.database import Database
 
 
@@ -52,7 +55,21 @@ class Jobs(object):
     def __once_done(self, result):
         meta, log = result
         Database().set_instance_log(meta['org']['id'], meta['repo']['id'], meta['hash'], meta['branch'], log)
+        #TODO REDIS
         
     def post(self, meta):
         self.pool.apply_async(self.__process, meta,
             callback=self.__once_done)
+            
+    def trymax():
+        print('qwe')
+        RedisBC().connect("localhost",6379,"hola")
+        RedisBC().subscribe(asd)
+        
+    def trymax():
+        print('zxc')
+        RedisBC().connect("localhost",6379,"hola")
+        RedisBC().publish("hola","ggggg")
+        
+    def asd():
+        print("asd")

@@ -1,3 +1,4 @@
+#coding utf-8
 from flask import Flask, request, session, g, abort, render_template, url_for, flash, redirect
 from github import Github
 from ipaddress import ip_address, ip_network
@@ -9,6 +10,7 @@ import os
 
 from ..common.database import Database
 from ..common.broadcaster import Broadcaster
+from ..common.redisbc import RedisBC#Redis BroadCaster
 from .jobs import Jobs
 
 
@@ -175,6 +177,7 @@ def main():
 
     # Start broadcaster
     Broadcaster().run(args.broadcast_host, args.broadcast_port, args.broadcast_secret.encode('utf-8'))
+    
 
     # Configure Flask app
     app = Flask(__name__)
