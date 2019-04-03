@@ -58,19 +58,43 @@ class Database(object):
     def get_config(self):
         return self.config.find_one()
 
-    def create_organization_if_not_exists(self, org):
-        if not self.get_organization_config(org):
+    def ensure_configured(self):
+        config = self.config.find_one()
+        if not config:
+            config = {
+                'oauth_token': None,
+                'parallel_jobs': 1
+            }
+            self.config.insert_one(config)
+            self.__clear_cache(self.get_config)
+
+    def save_oauth_key(self, key):
+        config = self.config.find_one()
+        self.config.update_one(
+            {'_id': config['_id']}, 
+            {'$set': {'oauth_token': key}}
+        )
+        self.__clear_cache(self.get_config)
+
+    def create_organization_if_not_exists(self, org_id, org_name):
+        if not self.get_organization_config(org_id):
             self.orgs.insert_one({
-                '_id': org,
+                '_id': org_id,
+                'name': org_name,
                 'secret': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
                 'skip_admin_push': True
             })
 
             self.__clear_cache(self.get_organizations)
+            self.__clear_cache(self.get_organization_config)
 
     @cache
     def get_organizations(self):
         return (o['_id'] for o in self.orgs.find({}))
+
+    @cache
+    def get_organizations_name(self):
+        return (o['name'] for o in self.orgs.find({}))
 
     @cache
     def get_organization_config(self, org):
@@ -237,7 +261,7 @@ class Database(object):
             },
             {
                 '_id': 1,
-                'max_per_day': 1,
+                'daily_usage': 1,
                 'instances.$': 1
             }
         )

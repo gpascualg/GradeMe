@@ -5,18 +5,20 @@ import json
 import hashlib
 import subprocess
 import tempfile
+import string
 import shutil
 import copy
 import argparse
 import datetime
 import random
+import pymongo
 
 from pymongo import MongoClient
 from distutils.dir_util import copy_tree
 from os.path import basename
 
-from common.database import Database
-from docker import ResultsListener
+from servers.common.database import Database
+from servers.docker import ResultsListener
 
 
 def update_instance(instance, status, results=[]):
@@ -29,7 +31,7 @@ def update_instance(instance, status, results=[]):
         results
     )
 
-def continue_process(instance, data, mounts, random_secret):
+def continue_process(instance, data, random_secret):
     if 'branch' in data:
         if data['branch'] != instance['_id']['branch']:
             update_instance(instance, 'branch-mismatch')
@@ -71,7 +73,7 @@ def continue_process(instance, data, mounts, random_secret):
         '--network', 'results',
         agent_name, docker_name, random_secret])
 
-def main(instance, mounts):
+def main(instance, random_secret):
     try:
         with open('/instance/code/.autograder.yml') as fp:
             try:
@@ -84,7 +86,7 @@ def main(instance, mounts):
         contents = yaml.dump(contents, encoding='utf-8')
 
         if hashlib.sha256(contents).hexdigest() == data['checksum']:
-            return continue_process(instance, data, mounts)
+            return continue_process(instance, data, random_secret)
         else:
             return False
     except:
@@ -100,18 +102,19 @@ Database().initialize('mongo')
 exitcode = 1
 try:
     instance = Database().get_instance(
-        os.environ['GITHUB_ORGANIZATION_ID'],
-        os.environ['GITHUB_REPOSITORY_ID'],
+        int(os.environ['GITHUB_ORGANIZATION_ID']),
+        int(os.environ['GITHUB_REPOSITORY_ID']),
         os.environ['GITHUB_COMMIT'],
         os.environ['GITHUB_BRANCH']
     )
     
     if instance is None:
-        update_instance(instance, 'org-repo-mismatch')
+        print('Could not find instance, should never happen')
+        # TODO(gpascualg): Notify error
     else:
         # Make sure noone can connect directly
         random_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
-        docker_id_or_false = main(instance, mounts, random_secret)
+        docker_id_or_false = main(instance, random_secret)
 
         if docker_id_or_false:
             # Block until we have all results
@@ -121,9 +124,14 @@ try:
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())
             exitcode = 0
-
+        else:
             # TODO(gpascualg): Check exit code using docker_id_or_false
-except:
+            print("Instance .autograder.yml is invalid")
+
+except pymongo.errors.ServerSelectionTimeoutError:
+    print("Could not reach MongoDB")
+except Exception as e:
+    print('Instance execution error: {}'.format(e))
     update_instance(instance, 'execution-error')
 
 sys.exit(exitcode)

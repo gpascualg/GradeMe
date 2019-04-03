@@ -21,6 +21,6 @@ ENV AUTOGRADER_SECRET=
 WORKDIR /opt
 COPY agents/agent-bootstrap/bootstrap.sh /opt/
 COPY agents/agent-bootstrap/process.py /opt/
-COPY servers/common /opt/
-COPY servers/docker /opt/
+COPY servers/common /opt/servers/common
+COPY servers/docker /opt/servers/docker
 CMD ["/opt/bootstrap.sh"]
