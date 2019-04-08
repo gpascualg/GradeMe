@@ -63,7 +63,7 @@ def setup_app_routes(app):
 def main():
     # New organizations to use
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
-    parser.add_argument('--github-api-key', required=True, help='API key for the master user')
+    parser.add_argument('--github-api-key', help='API key for the master user')
     parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)', type=str)
     parser.add_argument('--github-org-id', action='append', help='Initial Github organitzation(s)', type=int)
     parser.add_argument('--broadcast-host', default='localhost', help='Docker intercomunnication tool host')
@@ -81,6 +81,11 @@ def main():
     for arg in args_vars:
         args_vars[arg] = os.environ.get(arg.upper(), args_vars[arg])
 
+   if not args.github_api_key:
+        parser.print_help()
+        print('The following arguments are required: --github-api-key (or env GITHUB_API_KEY)')
+        sys.exit(2)
+        
     # Create databse it now
     Database.initialize(args.mongo_host)
 
