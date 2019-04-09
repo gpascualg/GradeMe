@@ -7,8 +7,10 @@ RUN apk --update add --no-cache python3 py3-pip docker && \
 	apk del build-deps && \
 	rm -rf /var/cache/apk/*
 
-ADD . servers/flaskweb
-WORKDIR servers/flaskweb
+
+ADD . /code
+WORKDIR /code
 
 VOLUME ["/tests", "/instances"]
-ENTRYPOINT ["python3", "servers/flaskweb/start_flask.py"]
+
+ENTRYPOINT ["python3", "start_flask.py"]

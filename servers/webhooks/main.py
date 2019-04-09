@@ -102,6 +102,7 @@ def main():
         g = Github(args.github_api_key)
 
         orgs = list(set(list(Database().get_organizations_name()) + (args.github_org or [])))
+        print(orgs)
         for org_name in orgs:
             print('Updating organization {}'.format(org_name))
 
