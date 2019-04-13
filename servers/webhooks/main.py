@@ -112,7 +112,7 @@ def main():
 
             # Get org and ensure it is created
             org = g.get_organization(org_name)
-            Database().create_organization_if_not_exists(org.id)
+            Database().create_organization_if_not_exists(org.id, org_name)
 
             # Update admins
             for admin in org.get_members(role='admin'):
