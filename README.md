@@ -56,7 +56,7 @@ python start_service.py --github-api-key=<YOUR API KEY> --github-org=<YOUR ORGAN
 For example:
 
 ```bash
-python start_service.py --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
+python start_service.py --port 8080 --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
 ```
 
 Processing tests synchronously instead of in a processes pool can be achieved by setting the environment variable `DISABLE_POOL` to 1, for example:
