@@ -6,3 +6,5 @@ PyGithub==1.43.4
 redis==3.2.1
 npyscreen==4.10.5
 flask-socketio==3.3.2
+gevent===1.4.0
+eventlet==0.24.1

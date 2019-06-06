@@ -81,7 +81,7 @@ def main():
     for arg in args_vars:
         args_vars[arg] = os.environ.get(arg.upper(), args_vars[arg])
 
-   if not args.github_api_key:
+    if not args.github_api_key:
         parser.print_help()
         print('The following arguments are required: --github-api-key (or env GITHUB_API_KEY)')
         sys.exit(2)
