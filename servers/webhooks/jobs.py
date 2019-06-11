@@ -12,11 +12,15 @@ from ..common.database import Database
 
 
 def retrieve_stdout(command):
+    RedisBC().connect("localhost",6379)
+    RedisBC().publish("hola","retrieve_stdout")
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = proc.stdout.read()
     return output.decode('utf-8').strip()
 
 def process_job(meta, oauth_token):
+    RedisBC().connect("localhost",6379)
+    RedisBC().publish("hola","process_job")
     instance_path = tempfile.mkdtemp()
     instance_name = basename(instance_path)
 
@@ -49,16 +53,22 @@ class Jobs(object):
         return Jobs.__instance
 
     def __init__(self):
+        RedisBC().connect("localhost",6379)
+        RedisBC().publish("hola","__init__")
         config = Database().get_config()
         self.oauth_token = config['oauth_token']
         self.pool = Pool(config['parallel_jobs'])
     
     def __once_done(self, result):
+        RedisBC().connect("localhost",6379)
+        RedisBC().publish("hola","__once_done")
         meta, log = result
         Database().set_instance_log(meta['org']['id'], meta['repo']['id'], meta['hash'], meta['branch'], log)
         return True
     
     def post(self, meta):
+        RedisBC().connect("localhost",6379)
+        RedisBC().publish("hola","post")
         if os.environ.get('DISABLE_POOL'):
             return self.__once_done(process_job(meta, self.oauth_token))
         else:

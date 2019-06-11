@@ -55,8 +55,9 @@
                 $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
             });
             socket.on('newMsg', function(msg) {
-                console.log('sssssssssssssssss');
-                document.getElementById('qwe').value=msg;
+                console.log('message received');
+                msg += '\n';
+                document.getElementById('qwe').value+=msg;
             });
 
             // Handlers for the different forms in the page.
@@ -137,6 +138,6 @@
     </form>
     <h2>Receive:</h2>
     <div id="log"></div>
-    <input type="text" size="200" value="" id="qwe" name="qwe" />
+    <textarea type="text" rows="20" cols="200" value="" id="qwe" name="qwe" ></textarea>
 </body>
 </html>

@@ -31,12 +31,12 @@ def hello_world():
 @socketio.on('connect')
 def on_connect():
     print('FLASK APP: new user connected')
-    emit('my_response', 'asdssssss', namespace='/test')
+    emit('my_response', 'client connected', namespace='/test')
     emit('newMsg', {'data': 'Connected'})
     
 @socketio.on('message', namespace='/test')
 def on_message():
-    print('ssssssssssssssssssssssssssssssssss')
+    print('message received')
     
 @socketio.on('qwe', namespace='/test')
 def test_message(message):
@@ -67,7 +67,6 @@ def asd(msg):
     print('callback received from redis'+str(msg))
     
 if __name__ == '__main__':
-    print('qweqweqwe')
     
     with app.app_context():
         RedisBC().connect("redis",6379)
