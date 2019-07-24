@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
+import argparse
 import unittest
 import logging
 import atexit
 import os
 import tempfile
 
-from docker import MessageSender
-from .privilegies improt drop_privileges
+from .docker import MessageSender
+from .privilegies import drop_privileges
 
 
 def send_end(client):
@@ -49,7 +50,8 @@ def main():
     drop_privileges()
 
     # Run tests
-    unittest.TextTestRunner(stream=fp, verbosity=0).run(testsuite)
+    with tempfile.TemporaryFile('w') as fp:
+        unittest.TextTestRunner(stream=fp, verbosity=0).run(testsuite)
 
 if __name__ == '__main__':
     main()
