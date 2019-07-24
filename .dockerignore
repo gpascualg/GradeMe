@@ -1,3 +1,4 @@
 .git
 .vscode
 *.tar.gz
+node_modules

@@ -8,15 +8,15 @@ from .message_type import MessageType
 class MessageSender(object):
     __instance = {}
     
-    def __new__(cls, queue):
+    def __new__(cls, host, queue):
         if MessageSender.__instance.get(queue) is None:
             MessageSender.__instance[queue] = object.__new__(cls)
             
         return MessageSender.__instance[queue]
 
-    def __init__(self, queue):
+    def __init__(self, host, queue):
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbit')
+            pika.ConnectionParameters(host=host)
         )
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue)
@@ -30,6 +30,8 @@ class MessageSender(object):
 
     def end(self):
         self.send(MessageType.TESTS_DONE, {})
+        self.connection.close()
+        MessageSender.__instance[self.queue] = None
     
     def send(self, type, data):
         msg = '{} {}'.format(int(type), json.dumps(data))

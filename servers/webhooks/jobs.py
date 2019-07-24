@@ -38,7 +38,7 @@ def process_job(meta, oauth_token):
 
     retrieve_stdout(['docker', 'network', 'connect', 'results', instance_name])
     
-    MessageSender('jobs').send(MessageType.JOB_STARTED, meta)
+    MessageSender('rabbit-private', 'jobs').send(MessageType.JOB_STARTED, meta)
 
     return meta, retrieve_stdout(['docker', 'start', '-a', instance_name])
     
@@ -58,11 +58,11 @@ class Jobs(object):
     def __once_done(self, result):
         meta, log = result
         Database().set_instance_log(meta['org']['id'], meta['repo']['id'], meta['hash'], meta['branch'], log)
-        MessageSender('jobs').send(MessageType.JOB_ENDED, meta)
+        MessageSender('rabbit-private', 'jobs').send(MessageType.JOB_ENDED, meta)
         return True
     
     def post(self, meta):
-        MessageSender('jobs').send(MessageType.JOB_QUEUED, meta)
+        MessageSender('rabbit-private', 'jobs').send(MessageType.JOB_QUEUED, meta)
 
         if os.environ.get('DISABLE_POOL'):
             return self.__once_done(process_job(meta, self.oauth_token))

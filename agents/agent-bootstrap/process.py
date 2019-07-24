@@ -18,7 +18,7 @@ from distutils.dir_util import copy_tree
 from os.path import basename
 
 from servers.common.database import Database
-from servers.docker import ResultsListener
+from servers.docker import MessageListener
 
 
 def update_instance(instance, status, results=[]):
@@ -117,7 +117,7 @@ try:
 
         if docker_id_or_false:
             # Block until we have all results
-            results = ResultsListener(random_secret)
+            results = MessageListener(random_secret)
 
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())

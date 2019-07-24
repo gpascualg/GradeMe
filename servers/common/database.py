@@ -1,4 +1,6 @@
 from pymongo import MongoClient, ASCENDING
+from bson.objectid import ObjectId
+
 import random
 import string
 
@@ -43,7 +45,9 @@ class Database(object):
 
     def __init__(self):
         # Connect
-        self.db = MongoClient(Database.__host).autograder
+        self.client = MongoClient(Database.__host)
+        self.db = self.client.autograder
+        self.client.server_info()
 
         # Save collections
         self.config = self.db.config
@@ -107,7 +111,7 @@ class Database(object):
         return (u['_id'] for u in \
             self.users.find({'orgs': {'name': org, 'permission': 'admin'}}))
 
-    def add_organization_member(self, org, member, permission):
+    def add_organization_member(self, org, member, name, permission):
         result = self.users.update_one(
             {'_id': member},
             {
@@ -126,12 +130,14 @@ class Database(object):
             self.users.insert_one(
                 {
                     '_id': member,
+                    'name': name,
                     'orgs': [
                         {
                             'name': org,
                             'permission': permission
                         }
-                    ]
+                    ],
+                    'oauth': ''
                 }
             )
 
@@ -316,6 +322,23 @@ class Database(object):
                 }
             }
         )
+
+    def update_oauth(self, id, oauth):
+        result = self.users.update_one(
+            {'_id': ObjectId(id)},
+            {'$set': {'oauth': oauth}}
+        )
+        return result.matched_count == 1
+
+    def user_by_oauth(self, oauth):
+        result = self.users.find_one({'oauth': oauth})
+        if result is not None:
+            return result
+
+        return None
+
+    def user(self, id):
+        return self.users.find_one({'_id': ObjectId(id)})
 
     def Try(self):
         def wrap(f):

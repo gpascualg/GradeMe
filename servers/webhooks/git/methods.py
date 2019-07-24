@@ -41,10 +41,11 @@ class GithubMethods(object):
             return json.dumps({'status': 'skipped'})
 
         member = payload['membership']['user']['id']
+        name = payload['membership']['user']['name']
         org = payload['organization']['id']
 
         if action == 'member_added':
-            Database().add_organization_member(org, member, permission)
+            Database().add_organization_member(org, member, name, permission)
         elif action == 'member_removed':
             Database().remove_organization_member(org, member)
 

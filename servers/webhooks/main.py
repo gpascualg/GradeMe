@@ -14,7 +14,7 @@ from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
 
 
-def setup_app_routes(app):    
+def setup_app_routes(app):
     @app.route('/', methods=['POST'])
     def github_webhook():
         # Enforce IP address
@@ -117,7 +117,7 @@ def main():
 
             # Update admins
             for admin in org.get_members(role='admin'):
-                Database().Try().add_organization_member(org.id, admin.id, 'admin')
+                Database().Try().add_organization_member(org.id, admin.id, admin.name, 'admin')
 
             # Update teams
             for team in org.get_teams():

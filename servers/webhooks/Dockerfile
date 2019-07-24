@@ -1,6 +1,6 @@
 FROM alpine:3.10
 
-COPY server/webhooks/requirements.txt /opt/
+COPY servers/webhooks/requirements.txt /opt/
 RUN apk --update add --no-cache python3 py3-pip docker && \
 	apk --update add --no-cache --virtual build-deps python3-dev build-base && \
 	pip3 install --upgrade -r /opt/requirements.txt && \

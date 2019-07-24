@@ -16,7 +16,7 @@ def send_end(client):
 def setup(host, secret):
     # Results
     # TODO(gpascualg): Retry connection, it will probably fail at first
-    client = MessageSender()
+    client = MessageSender('rabbit', secret)
 
     # Logging
     logger = logging.getLogger()
