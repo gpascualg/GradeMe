@@ -71,9 +71,10 @@ def main():
     parser.add_argument('--broadcast-secret', type=str, help='Shared secret between dockers')
     parser.add_argument('--mongo-host', default='mongo', help='MongoDB hostname')
     parser.add_argument('--no-github-init', action='store_true', default=False, help='Do not fetch Github data')
+    parser.add_argument('--no-cli', action='store_true', help='Do not display CLI')
     parser.add_argument('--host', type=str, default='localhost', help='Server hostname')
     parser.add_argument('--port', type=int, default=80, help='Server port')
-    parser.add_argument('--debug', action='store_true', help='Run server in debug mode')
+    parser.add_argument('--debug', action='store_true', help='Run server in debug mode')    
     args = parser.parse_args()
 
     # Arguments may be submitted in ENV variables (specially in Docker via docker-compose)
@@ -142,10 +143,11 @@ def main():
         GithubMethods.MOCK_ORG_ID = args.github_org_id[0]
 
     # Command line and info
-    cli = GradeMeCLI(GithubMethods)
-    cli.run()
-    pool = ThreadPool(1)
-    pool.apply_async(cli.run, callback=lambda _: os.kill(os.getpid(), 9))
+    if not args.no_cli:
+        cli = GradeMeCLI(GithubMethods)
+        cli.run()
+        pool = ThreadPool(1)
+        pool.apply_async(cli.run, callback=lambda _: os.kill(os.getpid(), 9))
 
     # Setup app and run it
     setup_app_routes(app)

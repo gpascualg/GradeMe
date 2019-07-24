@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.10
 
 COPY requirements.txt /opt/
 RUN apk --update add --no-cache python3 py3-pip docker && \
@@ -10,5 +10,4 @@ RUN apk --update add --no-cache python3 py3-pip docker && \
 ADD . /code
 WORKDIR /code
 
-VOLUME ["/tests", "/instances"]
 ENTRYPOINT ["python3", "start_service.py"]

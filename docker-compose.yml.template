@@ -1,30 +1,26 @@
 version: "3"
 services:
-  web:
-    image: "autograder"
-    command: "--debug --port <PORT>"
+  webhooks:
+    build: 
+      context: .
+      dockerfile: servers/webhooks/Dockerfile
     ports:
-      - "<PORT>:<PORT>"
+      - 8080:80
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "<TESTS_STORAGE_PATH>:/tests"
-      - "<TEMPORAL_CLONE_PATH>:/instances"
+      - /var/run/docker.sock:/var/run/docker.sock
     links:
       - mongo
     depends_on:
       - mongo
     networks:
       - backend
-    environment:
-      - GITHUB_API_KEY="<KEY>"
-      - GITHUB_ORG="<ORGANIZATION>"
-      - BROADCAST_SECRET="<SECRET>"
+    command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo
 
   mongo:
     image: "mongo:3.4"
     container_name: "mongo"
     volumes:
-      - "<DATABASE_PATH>:/data/db"
+      - mongodb-data:/data/db
     ports:
       - 27017:27017
     networks:
@@ -36,3 +32,6 @@ networks:
   results:
     driver: overlay
     internal: true
+
+volumes:
+  mongodb-data:

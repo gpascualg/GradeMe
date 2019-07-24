@@ -1,7 +1,7 @@
 # Python agent for builtin autograding
 # Includes Anaconda Python 3.6 and bootstraps github cloning
 
-FROM alpine:3.6
+FROM alpine:3.10
 
 RUN apk --update add --no-cache python3 py3-pip git lapack libstdc++ freetype libpng wget  nodejs nodejs-npm  && \
 	apk --update add --no-cache --virtual build-deps python3-dev build-base gcc gfortran lapack-dev freetype-dev libpng-dev && \
