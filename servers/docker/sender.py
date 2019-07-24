@@ -5,14 +5,14 @@ from .message_type import MessageType
 
 
     
-class ResultsSender(object):
-    __instance = None
+class MessageSender(object):
+    __instance = {}
     
     def __new__(cls, queue):
-        if ResultsSender.__instance is None:
-            ResultsSender.__instance = object.__new__(cls)
+        if MessageSender.__instance.get(queue) is None:
+            MessageSender.__instance[queue] = object.__new__(cls)
             
-        return ResultsSender.__instance
+        return MessageSender.__instance[queue]
 
     def __init__(self, queue):
         self.connection = pika.BlockingConnection(
@@ -23,15 +23,14 @@ class ResultsSender(object):
         self.queue = queue
 
     def import_error(self, **data):
-        msg = '{} {}'.format(int(MessageType.IMPORT_ERROR), json.dumps(data))
-        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
+        self.send(MessageType.IMPORT_ERROR, data)
 
     def send_result(self, **data):
-        msg = '{} {}'.format(int(MessageType.TEST_RESULT), json.dumps(data))
-        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
+        self.send(MessageType.TEST_RESULT, data)
 
     def end(self):
-        msg = '{} {}'.format(int(MessageType.TESTS_DONE), '-')
-        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
-        self.connection.close()
+        self.send(MessageType.TESTS_DONE, {})
     
+    def send(self, type, data):
+        msg = '{} {}'.format(int(type), json.dumps(data))
+        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)

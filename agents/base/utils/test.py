@@ -6,7 +6,7 @@ import atexit
 import os
 import tempfile
 
-from docker import ResultsSender
+from docker import MessageSender
 from .privilegies improt drop_privileges
 
 
@@ -16,7 +16,7 @@ def send_end(client):
 def setup(host, secret):
     # Results
     # TODO(gpascualg): Retry connection, it will probably fail at first
-    client = ResultsSender()
+    client = MessageSender()
 
     # Logging
     logger = logging.getLogger()
