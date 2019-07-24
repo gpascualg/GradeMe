@@ -5,15 +5,27 @@ import string
 
 CACHES = {}
 
-def cache(f):
-    def wrapper(self, *args, **kwargs):
-        if args not in CACHES[f]:
-            CACHES[f][args] = f(self, *args, **kwargs)
-        return CACHES[f][args]
+def cache(key):
+    def impl(f):
+        def wrapper(self, *args, **kwargs):
+            if args not in CACHES[key]:
+                CACHES[key][args] = f(self, *args, **kwargs)
+            return CACHES[key][args]
 
-    CACHES[f] = {}
-    return wrapper
+        CACHES[key] = {}
+        return wrapper
 
+    return impl
+
+def clear_cache(key):
+    if not key in CACHES:
+        return
+        
+    CACHES[key] = {}
+
+def clear_caches():
+    for key in CACHES:
+        clear_cache(key)
 
 class Database(object):
     __instance = None
@@ -41,20 +53,7 @@ class Database(object):
         self.sessions = self.db.sessions
         self.orgs = self.db.organizations
 
-    def __clear_cache(self, f):
-        if not f in CACHES:
-            return
-        
-        if isinstance(CACHES[f], (list, dict)):
-            CACHES[f] = type(CACHES[f])()
-        else:
-            CACHES[f] = None
-
-    def __clear_caches(self):
-        for f in CACHES:
-            self.__clear_cache(f)
-
-    @cache
+    @cache('config')
     def get_config(self):
         return self.config.find_one()
 
@@ -66,7 +65,7 @@ class Database(object):
                 'parallel_jobs': 1
             }
             self.config.insert_one(config)
-            self.__clear_cache(self.get_config)
+            clear_cache('config')
 
     def save_oauth_key(self, key):
         config = self.config.find_one()
@@ -74,7 +73,7 @@ class Database(object):
             {'_id': config['_id']}, 
             {'$set': {'oauth_token': key}}
         )
-        self.__clear_cache(self.get_config)
+        clear_cache('config')
 
     def create_organization_if_not_exists(self, org_id, org_name):
         if not self.get_organization_config(org_id):
@@ -85,25 +84,25 @@ class Database(object):
                 'skip_admin_push': True
             })
 
-            self.__clear_cache(self.get_organizations)
-            self.__clear_cache(self.get_organization_config)
+            clear_cache('orgs')
+            clear_cache('org/config')
 
-    @cache
+    @cache('orgs')
     def get_organizations(self):
         return (o['_id'] for o in self.orgs.find({}))
 
-    @cache
+    @cache('orgs/name')
     def get_organizations_name(self):
         return (o['name'] for o in self.orgs.find({}))
 
-    @cache
+    @cache('org/config')
     def get_organization_config(self, org):
         return self.orgs.find_one(
             {'_id': org},
             {'_id': 0}
         )
 
-    @cache
+    @cache('org/admin')
     def get_organization_admins(self, org):
         return (u['_id'] for u in \
             self.users.find({'orgs': {'name': org, 'permission': 'admin'}}))
@@ -137,7 +136,7 @@ class Database(object):
             )
 
         if permission == 'admin':
-            self.__clear_cache(self.get_organization_admins)
+            clear_cache('org/admin')
 
     def remove_organization_member(self, org, member):
         self.users.update_one(
