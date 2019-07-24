@@ -28,7 +28,8 @@ Now, add this user to the organization you just created. That can be done from: 
 
 Install required Python libraries
 ```bash
-pip install -r requirements.txt
+pip install -r servers/webhooks/requirements.txt
+pip install -r servers/frontend/requirements.txt
 ```
 
 Create docker networks for test execution

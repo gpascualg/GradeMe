@@ -1,7 +1,7 @@
 FROM alpine:3.10
 
-COPY server/webhooks/requirements.txt /opt/
-RUN apk --update add --no-cache python3 py3-pip docker && \
+COPY server/frontend/requirements.txt /opt/
+RUN apk --update add --no-cache python3 py3-pip && \
 	apk --update add --no-cache --virtual build-deps python3-dev build-base && \
 	pip3 install --upgrade -r /opt/requirements.txt && \
 	apk del build-deps && \
@@ -10,4 +10,4 @@ RUN apk --update add --no-cache python3 py3-pip docker && \
 ADD . /code
 WORKDIR /code
 
-ENTRYPOINT ["python3", "-u", "start_service.py"]
+ENTRYPOINT ["python3", "-u", "start_frontend.py"]
