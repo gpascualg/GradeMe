@@ -12,6 +12,7 @@ services:
       - mongo
     depends_on:
       - mongo
+      - redis
     networks:
       - backend
     command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo
@@ -25,6 +26,39 @@ services:
       - 27017:27017
     networks:
       - backend
+
+  redis:
+    image: redis/5.0
+    networks:
+      - backend
+
+  agent-base:
+    build: 
+      context: .
+      dockerfile: agents/base/Dockerfile
+    image: agent-base
+    command: "true"
+
+  agent-bootstrap:
+    build:
+      context: .
+      dockerfile: agents/agent-bootstrap/Dockerfile
+    image: agent-bootstrap
+    command: "true"
+  
+  agent-python3:
+    build: agents/agent-python3
+    image: agent-python3
+    depends_on: 
+      - agent-base
+    command: "true"
+  
+  agent-telegram:
+    build: agents/agent-telegram
+    image: agent-telegram
+    depends_on: 
+      - agent-python3
+    command: "true"
 
 networks:
   backend:

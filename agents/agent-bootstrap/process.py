@@ -62,7 +62,6 @@ def continue_process(instance, data, random_secret):
         update_instance(instance, 'non-existing-agent')
         return False
 
-    docker_name = os.environ['DOCKER_NAME']
     volume_name = os.environ['GITHUB_ORGANIZATION_ID'] + '-' + data['execute']
 
     # Run detached
@@ -71,7 +70,7 @@ def continue_process(instance, data, random_secret):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, docker_name, random_secret])
+        agent_name, random_secret])
 
 def main(instance, random_secret):
     try:
@@ -118,8 +117,7 @@ try:
 
         if docker_id_or_false:
             # Block until we have all results
-            results = ResultsListener('')
-            results.run(os.environ['DOCKER_NAME'], 9999, random_secret)
+            results = ResultsListener(random_secret)
 
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())

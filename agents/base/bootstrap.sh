@@ -42,4 +42,4 @@ export PYTHONPATH=/opt/:$PYTHONPATH
 
 # Run
 echo "> Start tests"
-exec /tests/_/main --host $1 --secret $2
+exec /tests/_/main --secret $1

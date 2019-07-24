@@ -27,7 +27,6 @@ def process_job(meta, oauth_token):
         '-e', 'GITHUB_REPOSITORY_ID=' + str(meta['repo']['id']),
         '-e', 'GITHUB_COMMIT=' + meta['hash'],
         '-e', 'OAUTH_TOKEN=' + oauth_token,
-        '-e', 'DOCKER_NAME=' + instance_name,
         '-e', 'AUTOGRADER_SECRET=' + Database().get_organization_config(meta['org']['id'])['secret'],
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '--mount', 'type=tmpfs,destination=/instance',

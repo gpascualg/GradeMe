@@ -1,66 +1,44 @@
-import socket
-import select
+import pika
 
 from .message_type import MessageType
-from .message import Message
 
 
 class ResultsListener(object):
     __instance = None
     
-    def __new__(cls):
+    def __new__(cls, queue):
         if ResultsListener.__instance is None:
             ResultsListener.__instance = object.__new__(cls)
             
         return ResultsListener.__instance
 
-    def __listen(self):
-        self.socket.bind(self.address)
-        self.socket.listen(1)
-        
-        (clientsocket, address) = self.socket.accept()
-        clientsocket.setblocking(0)
-        self.__connections.append(clientsocket)
+    def __init__(self, queue):
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='rabbit')
+        )
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=queue)
+        self.queue = queue
+        self.messages = []
 
-    def __poll(self):
-        msg = Message()
+    def callback(self, ch, method, properties, body):
+        try:
+            msg = body.split(max=1)
+            msgtype = int(msg[0])
 
-        while self.running:
-            read_ready, _, _ = select.select(self.__connections, [], [], 1.0)
-            for sock in read_ready:
+            if msgtype == MessageType.TESTS_DONE:
+                self.channel.stop_consuming()
 
-                read_size = msg.read_pending()
-                data = sock.recv(read_size)
-
-                # Disconnected
-                if not data:
-                    self.running = False
-                    sock.close()
-                    break
-
-                if msg.unpack(data):
-                    if not msg.is_valid(self.secret):
-                        self.running = False
-                        sock.close()
-                        break
-
-                    if msg.Type() == MessageType.TESTS_DONE:
-                        self.running = False
-                        sock.close()
-                        break
-                    
-                    self.__messages.append(msg.clone())
-
-    def run(self, host, port, secret):
-        self.running = True
-        self.address = (host, port)
-        self.secret = secret.encode()
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        self.__connections = []
-        self.__messages = []
-        self.__listen()
-        self.__poll()
+            else:
+                self.messages.append((MessageType(msgtype), msg[1]))
+        except:
+            self.channel.stop_consuming()
+            
+    def run(self):
+        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
+        while self.channel._consumer_infos:
+            self.channel.connection.process_data_events(time_limit=1)
+        self.connection.close()
 
     def json(self):
-        return [{"type": msg.Type().value, "data": msg.Data()} for msg in self.__messages]
+        return [{"type": type, "data": data} for type, data in self.messages]

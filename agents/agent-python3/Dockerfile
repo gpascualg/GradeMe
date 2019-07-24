@@ -3,11 +3,8 @@
 
 FROM agent-base
 
-RUN apk --update add --no-cache python3 py3-pip git lapack libstdc++ freetype libpng wget && \
-	apk --update add --no-cache --virtual build-deps python3-dev build-base gcc gfortran lapack-dev freetype-dev libpng-dev && \
-	pip3 install --no-cache-dir --upgrade cython==0.29.12 pandas==0.25.0 numpy==1.16.0 scipy==0.21.2 matplotlib==2.1.0rc1 scikit-learn==0.21.2 && \
-	apk del build-deps && \
-	ln -s /usr/include/locale.h /usr/include/xlocale.h && \
+WORKDIR /
+RUN apk --update add --no-cache python3 py3-numpy@community py3-pandas@testing py3-scipy@community py3-scikit-learn@testing py3-matplotlib@testing && \
 	rm -rf /var/cache/apk/*
 
 VOLUME ["/instance"]

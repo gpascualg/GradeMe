@@ -17,7 +17,6 @@ def setup(host, secret):
     # Results
     # TODO(gpascualg): Retry connection, it will probably fail at first
     client = ResultsSender()
-    client.connect(host, 9999, secret)
 
     # Logging
     logger = logging.getLogger()
@@ -35,7 +34,6 @@ def setup(host, secret):
 
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--host', required=True)
     parser.add_argument('--secret', required=True)
     args = parser.parse_args()
 
