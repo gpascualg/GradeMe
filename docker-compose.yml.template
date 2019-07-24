@@ -87,7 +87,6 @@ networks:
   backend:
     driver: bridge
   results:
-    driver: overlay
     internal: true
 
 volumes:

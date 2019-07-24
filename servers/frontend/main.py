@@ -10,7 +10,7 @@ import math
 from ..common.database import Database
 
 
-def setup_app_routes(app, github):
+def setup_app_routes(app, github, socketio):
 
     @app.before_request
     def before_request():
@@ -65,6 +65,10 @@ def setup_app_routes(app, github):
     def index():
         return render_template('index.html')
     
+    @socketio.on('is-logged')
+    def is_user_logged():
+        before_request()
+        emit('login-status', g.user is not None)
 
 def main():
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
@@ -76,7 +80,7 @@ def main():
     parser.add_argument('--debug', action='store_true', help='Run server in debug mode')    
     args = parser.parse_args()
 
-    Database().initialize(args.mongo_host)
+    Database.initialize(args.mongo_host)
 
     app = Flask(__name__)
     app.config['GITHUB_CLIENT_ID'] = args.github_client_id
@@ -88,5 +92,7 @@ def main():
     CORS(app)
     Session(app)
     socketio = SocketIO(app, manage_session=False)
+    github = GitHub(app)
 
+    setup_app_routes(app, github, socketio)
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)

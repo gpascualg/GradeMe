@@ -1,0 +1,68 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Foundation | Welcome</title>
+        
+        <link rel="stylesheet" href="css/foundation.min.css">
+        <link rel="stylesheet" href="css/simplemde.min.css">
+        
+        <script src="js/simplemde.min.js"></script>
+
+        <style>
+            .CodeMirror, .CodeMirror-scroll {
+	            min-height: 100px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <ul class="menu">
+                    <li class="menu-text">Blog</li>
+                    <li><a href="#">One</a></li>
+                    <li><a href="#">Two</a></li>
+                    <li><a href="#">Three</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="callout primary" onclick="new_card()">
+            <div class="row column text-center">
+                <h1>漢字 Deck</h1>
+            </div>
+        </div>
+
+        <div class="row" id='template' style='display: none; margin-bottom: 5px;'>
+            <div class="large-12 large-centered columns">
+                <div class="row" style="border: 1px solid black; border-radius: 5px;">
+                    <div class="columns medium-6 large-6">
+                        <p style="text-align: center;">
+                            <span style="font-variant: small-caps">Front</span>
+                            <textarea id='front'></textarea>
+                        </p>
+                    </div>
+                    <div class="columns medium-6 large-6">
+                        <p style="text-align: center;">
+                            <span style="font-variant: small-caps">Back</span>
+                            <textarea id='back'></textarea>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <script src="js/jquery-2.1.4.min.js"></script>
+        <script src="js/jquery.scrollTo.min.js"></script>
+        <script src="js/foundation.js"></script>
+
+        <script>
+            $(document).foundation();
+        </script>
+
+        <script src="js/main.js"></script>
+    </body>
+</html>
