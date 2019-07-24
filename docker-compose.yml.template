@@ -8,14 +8,26 @@ services:
       - 8080:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - mongo
     depends_on:
       - mongo
-      - redis
+      - rabbit
+      - rabbit-private
     networks:
       - backend
     command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo
+
+  frontend:
+    build:
+      context: .
+      dockerfile: servers/frontend/Dockerfile
+    ports:
+      - 9090:80
+    depends_on:
+      - mongo
+      - rabbit-private
+    networks:
+      - backend
+    command: --mongo-host=mongo
 
   mongo:
     image: "mongo:3.4"
@@ -27,8 +39,17 @@ services:
     networks:
       - backend
 
-  redis:
-    image: redis/5.0
+  rabbit:
+    image: rabbitmq:3.7
+    hostname: rabbit
+    container_name: rabbit
+    networks:
+      - results
+
+  rabbit-private:
+    image: rabbitmq:3.7
+    hostname: rabbit-private
+    container_name: rabbit-private
     networks:
       - backend
 
@@ -36,6 +57,8 @@ services:
     build: 
       context: .
       dockerfile: agents/base/Dockerfile
+    networks:
+      - results
     image: agent-base
     command: "true"
 
@@ -45,7 +68,7 @@ services:
       dockerfile: agents/agent-bootstrap/Dockerfile
     image: agent-bootstrap
     command: "true"
-  
+
   agent-python3:
     build: agents/agent-python3
     image: agent-python3
