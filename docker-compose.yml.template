@@ -14,7 +14,7 @@ services:
       - rabbit-private
     networks:
       - backend
-    command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo
+    command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo --host=0.0.0.0 --port=80
 
   frontend:
     build:
@@ -27,7 +27,7 @@ services:
       - rabbit-private
     networks:
       - backend
-    command: --mongo-host=mongo
+    command: --mongo-host=mongo --host=0.0.0.0 --port=80
 
   mongo:
     image: "mongo:3.4"

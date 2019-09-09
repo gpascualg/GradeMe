@@ -14,6 +14,7 @@ RUN cd /code/servers/frontend/web && \
 	rm -rf node_modules && \
 	npm install && \
 	npm run build && \
+	mkdir -p ../{static,templates} && \
 	mv dist/index.html ../templates/ && \
 	mv dist/js ../static/ && \
 	mv dist/css ../static/ && \
