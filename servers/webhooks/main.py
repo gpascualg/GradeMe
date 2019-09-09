@@ -119,7 +119,7 @@ def main():
         Database().create_organization_if_not_exists(org, 'fake-org-{}'.format(org))
 
     # Make sure we have all users, admins, etc.
-    if not args.no_github_init:        
+    if not args.no_github_init:
         # Github API
         g = Github(args.github_api_key)
 

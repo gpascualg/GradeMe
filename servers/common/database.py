@@ -98,13 +98,14 @@ class Database(object):
     def get_credentials(self, host):
         return self.config.find_one()['credentials'].get(host)
 
-    def create_organization_if_not_exists(self, org_id, org_name):
+    def create_organization_if_not_exists(self, org_id, org_name, fake=False):
         if not self.get_organization_config(org_id):
             self.orgs.insert_one({
                 '_id': org_id,
                 'name': org_name,
                 'secret': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
-                'skip_admin_push': True
+                'skip_admin_push': True,
+                'fake': fake
             })
 
             clear_cache('orgs')
@@ -115,7 +116,9 @@ class Database(object):
         return (o['_id'] for o in self.orgs.find({}))
 
     @cache('orgs/name')
-    def get_organizations_name(self):
+    def get_organizations_name(self, skip_false=True):
+        if skip_false:
+            return (o['name'] for o in self.orgs.find({'fake': False}))
         return (o['name'] for o in self.orgs.find({}))
 
     @cache('org/config')
