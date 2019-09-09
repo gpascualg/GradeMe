@@ -9,6 +9,37 @@ class GithubMethods(object):
     MOCK_ORG_ID = None
 
     @staticmethod
+    def repository(payload):
+        action = payload['action']
+        org = payload['repository']['owner']['id']
+        repo = payload['repository']['id']
+        author = payload['sender']['id']
+
+        if action == 'created':
+            Database().create_repository(org, repo, author)
+        elif action == 'deleted':
+            Database().remove_repository(org, repo)
+
+        logging.info(f'Repository: {action} by {author} in {org}:{repo}')
+        return json.dumps({"status": "success"})
+
+    @staticmethod
+    def member(payload):
+        action = payload['action']
+        member = payload['member']['id']
+        org = payload['repository']['owner']['id']
+        repo = payload['repository']['id']
+
+        if action == 'removed':
+            Database().remove_member_from_repo(org, repo, member)
+        elif action == 'added':
+            Database().add_member_to_repo(org, repo, member)
+
+        logging.info(f'Member: {action} {member} in {org}:{repo}')
+        return json.dumps({"status": "success"})
+
+
+    @staticmethod
     def github_membership_webhook(payload):
         action = payload['action']
         member = payload['member']['id']

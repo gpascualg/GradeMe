@@ -54,7 +54,11 @@ def setup_app_routes(app):
         
         logging.info(f'Webhook event is {event}')
 
-        if event == 'membership':
+        if event == 'repository':
+            return GithubMethods.repository(payload)
+        elif event == 'member':
+            return GithubMethods.member(payload)
+        elif event == 'membership':
             return GithubMethods.github_membership_webhook(payload)
         elif event == 'team_add':
             return GithubMethods.github_team_add_webhook(payload)
@@ -149,7 +153,7 @@ def main():
                     Database().Try().add_team_permission(org.id, team.id, repo.id)
 
         limits = g.get_rate_limit()
-        logging.info(f"API calls: {limits.core.remaining}/{limits.core.limit} - Resets in {limits.core.reset}")
+        logging.info(f"API calls: {limits.core.remaining}/{limits.core.limit} - Resets on {limits.core.reset}")
 
     # Mocking purposes
     if args.github_fake_id:

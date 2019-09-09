@@ -264,6 +264,12 @@ class Database(object):
             }
         )
 
+    def remove_repository(self, org, repo, pusher):
+        self.repos.delete_one({
+            '_id.org': org,
+            '_id.repo': repo
+        })
+
     def update_daily_usage(self, org, repo, daily_usage):
         self.repos.update(
             {
@@ -274,6 +280,28 @@ class Database(object):
                 '$set': 
                 {
                     'daily_usage': daily_usage
+                }
+            }
+        )
+
+    def add_member_to_repo(self, org, repo, member):
+        self.repos.update(
+            {'_id.org': org, '_id.repo': repo},
+            {
+                '$addToSet':
+                {
+                    'permissions': {'name': member, 'permission': 'user'}
+                }
+            }
+        )
+
+    def remove_member_from_repo(self, org, repo, member):
+        self.repos.update(
+            {'_id.org': org, '_id.repo': repo},
+            {
+                '$pull':
+                {
+                    'permissions': {'name': member, 'permission': 'user'}
                 }
             }
         )
