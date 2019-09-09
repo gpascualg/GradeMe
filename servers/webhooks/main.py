@@ -4,6 +4,7 @@ from ipaddress import ip_address, ip_network
 from multiprocessing.pool import ThreadPool
 
 import argparse
+import logging
 import requests
 import json
 import sys
@@ -26,6 +27,8 @@ def setup_app_routes(app):
             )
         )
 
+        logging.info(f'Received webhook from {src_ip}')
+
         # TODO(gpascualg): Cache this IPs, github won't be constantly changing them
         whitelist = requests.get('https://api.github.com/meta', verify=False).json()['hooks']
 
@@ -33,6 +36,7 @@ def setup_app_routes(app):
             if src_ip in ip_network(valid_ip):
                 break
         else:
+            logging.critical(f'Webhook from {src_ip} is not whitelisted!')
             abort(403)
 
         event = request.headers.get('X-GitHub-Event', 'ping')
@@ -48,6 +52,8 @@ def setup_app_routes(app):
         if payload is None:
             abort(202)
         
+        logging.info(f'Webhook event is {event}')
+
         if event == 'membership':
             return GithubMethods.github_membership_webhook(payload)
         elif event == 'team_add':
@@ -74,6 +80,10 @@ def main():
     parser.add_argument('--debug', action='store_true', help='Run server in debug mode')    
     args = parser.parse_args()
 
+    # Logging level
+    logging_level = logging.DEBUG if args.debug else logging.ERROR
+    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging_level)
+
     # Arguments may be submitted in ENV variables (specially in Docker via docker-compose)
     args_vars = vars(args)
     for arg in args_vars:
@@ -81,7 +91,7 @@ def main():
 
     if not args.github_api_key:
         parser.print_help()
-        print('The following arguments are required: --github-api-key (or env GITHUB_API_KEY)')
+        logging.critical('The following arguments are required: --github-api-key (or env GITHUB_API_KEY)')
         sys.exit(2)
         
     # Initialize database
@@ -115,7 +125,7 @@ def main():
 
         orgs = list(set(list(Database().get_organizations_name()) + (args.github_org or [])))
         for org_name in orgs:
-            print('Updating organization {}'.format(org_name))
+            logging.info(f'Updating organization {org_name}')
 
             # Get org and ensure it is created
             org = g.get_organization(org_name)
@@ -127,7 +137,7 @@ def main():
 
             # Update teams
             for team in org.get_teams():
-                print('\tUpdating team {}'.format(team.name))
+                logging.info(f'Updating team {team.name}')
 
                 # TODO: Use updated_at to cache queries
                 Database().Try().create_team(org.id, team.id)
@@ -139,10 +149,7 @@ def main():
                     Database().Try().add_team_permission(org.id, team.id, repo.id)
 
         limits = g.get_rate_limit()
-        print("\nRemaining API calls")
-        print(limits.core.limit)
-        print(limits.core.remaining)
-        print(limits.core.reset)
+        logging.info(f"API calls: {limits.core.remaining}/{limits.core.limit} - Resets in {limits.core.reset}")
 
     # Mocking purposes
     if args.github_fake_id:

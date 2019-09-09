@@ -1,4 +1,5 @@
 import json
+import logging
 
 from ...common.database import Database
 from ..jobs import Jobs
@@ -19,6 +20,7 @@ class GithubMethods(object):
         elif action == 'added':
             Database().add_team_member(org, team, member)
 
+        logging.info(f'Membership: {action} to {member} in {team}')
         return json.dumps({"status": "success"})
 
     @staticmethod
@@ -28,6 +30,7 @@ class GithubMethods(object):
         repo = payload['repository']['id']
         Database().add_team_permission(org, team, repo)
         
+        logging.info(f'Team: {team} perms to {org}:{repo}')
         return json.dumps({"status": "success"})
     
     @staticmethod
@@ -35,7 +38,8 @@ class GithubMethods(object):
         action = payload['action']
         if action == 'member_invited':
             return json.dumps({'status': 'skipped'})
-        
+
+        # TODO(gpascualg): Maybe we do want non-admin members?
         permission = payload['membership']['role']
         if permission != 'admin':
             return json.dumps({'status': 'skipped'})
@@ -43,6 +47,8 @@ class GithubMethods(object):
         member = payload['membership']['user']['id']
         name = payload['membership']['user']['name']
         org = payload['organization']['id']
+
+        logging.info(f'Org. Membership: {action} to {member} ({name}) in {team}')
 
         if action == 'member_added':
             Database().add_organization_member(org, member, name, permission)
@@ -83,16 +89,21 @@ class GithubMethods(object):
         author = payload['sender']['id']
         sha = payload['after']
 
+        logging.info(f'Got push on: {org}:{repo} of {author} ({sha})')
+
         # The following authors are ignored
         try:
             if Database().get_organization_config(org)['skip_admin_push']:
                 if author in Database().get_organization_admins(org):
+                    logging.info(f'Skipping: pushed by an admin')
                     return json.dumps({"status": "skipped"})
         except:
+            logging.info(f'Skipping: unexistant org')
             return json.dumps({"status": "non-existant-org: {}".format(org)})
 
         # Does this repository already exist?
         if Database().get_repository(org, repo) is None:
+            logging.info(f'Created repo')
             Database().create_repository(org, repo, author)
 
         # Create a test based on the commit message
@@ -101,6 +112,7 @@ class GithubMethods(object):
         Database().create_instance(org, repo, sha, branch, message)
 
         # This push information into the queue
+        logging.info(f'Posting job')
         Jobs().post({
             'org': {'id': org, 'name': payload['repository']['owner']['name']},
             'repo': {'id': repo, 'name': payload['repository']['name']},
