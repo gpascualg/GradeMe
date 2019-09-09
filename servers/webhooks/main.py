@@ -87,7 +87,7 @@ def main():
         print('The following arguments are required: --github-api-key (or env GITHUB_API_KEY)')
         sys.exit(2)
         
-    # Create databse it now
+    # Initialize database
     Database.initialize(args.mongo_host)
 
     # Configure Flask app
@@ -97,6 +97,14 @@ def main():
     # Save config and api key
     Database().ensure_configured()
     Database().save_oauth_key(args.github_api_key)
+
+    # Save rabbit credentials
+    with open('/run/secrets/rabbit-user') as fp:
+        rabbit_username = fp.read()
+    with open('/run/secrets/rabbit-pass') as fp:
+        rabbit_password = fp.read()
+
+    Database().save_credentials('rabbit', rabbit_username, rabbit_password)
     
     # Create, if not-existing, organizations
     for org in args.github_org_id or []:

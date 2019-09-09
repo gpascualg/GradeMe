@@ -2,7 +2,7 @@ import os
 import pwd
 import grp
 
-def drop_privileges(self):
+def drop_privileges():
     if os.getuid() != 0:
         return False
 

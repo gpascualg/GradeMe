@@ -13,7 +13,6 @@ import datetime
 import random
 import pymongo
 
-from pymongo import MongoClient
 from distutils.dir_util import copy_tree
 from os.path import basename
 
@@ -31,7 +30,7 @@ def update_instance(instance, status, results=[]):
         results
     )
 
-def continue_process(instance, data, random_secret):
+def continue_process(instance, data, rabbit_channel):
     if 'branch' in data:
         if data['branch'] != instance['_id']['branch']:
             update_instance(instance, 'branch-mismatch')
@@ -70,9 +69,9 @@ def continue_process(instance, data, random_secret):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, random_secret])
+        agent_name, rabbit_channel])
 
-def main(instance, random_secret):
+def main(instance, organization_id, rabbit_channel):
     try:
         with open('/instance/code/.autograder.yml') as fp:
             try:
@@ -80,12 +79,13 @@ def main(instance, random_secret):
             except:
                 return False
 
+        secret = Database().get_organization_config(organization_id)['secret']
         contents = copy.copy(data)
-        contents['checksum'] = os.environ['AUTOGRADER_SECRET']
+        contents['checksum'] = secret
         contents = yaml.dump(contents, encoding='utf-8')
 
         if hashlib.sha256(contents).hexdigest() == data['checksum']:
-            return continue_process(instance, data, random_secret)
+            return continue_process(instance, data, rabbit_channel)
         else:
             return False
     except:
@@ -112,12 +112,12 @@ try:
         # TODO(gpascualg): Notify error
     else:
         # Make sure noone can connect directly
-        random_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
-        docker_id_or_false = main(instance, random_secret)
+        docker_id_or_false = main(instance, int(os.environ['GITHUB_ORGANIZATION_ID']), os.environ['GITHUB_COMMIT'])
 
         if docker_id_or_false:
             # Block until we have all results
-            results = MessageListener(random_secret)
+            results = MessageListener('rabbit', os.environ['GITHUB_COMMIT'])
+            results.run()
 
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())

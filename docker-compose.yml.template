@@ -43,14 +43,14 @@ services:
     image: rabbitmq:3.7
     hostname: rabbit
     container_name: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/rabbit-user
+      - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/rabbit-pass
+    secrets:
+      - rabbit-user
+      - rabbit-pass
     networks:
       - results
-
-  rabbit-private:
-    image: rabbitmq:3.7
-    hostname: rabbit-private
-    container_name: rabbit-private
-    networks:
       - backend
 
   agent-base:
@@ -91,3 +91,10 @@ networks:
 
 volumes:
   mongodb-data:
+
+secrets:
+  rabbit-user:
+    external: true
+
+  rabbit-pass:
+    external: true

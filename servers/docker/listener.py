@@ -1,6 +1,7 @@
 import pika
 
 from .message_type import MessageType
+from ..common.database import Database
 
 
 class MessageListener(object):
@@ -13,8 +14,10 @@ class MessageListener(object):
         return MessageListener.__instance[queue]
 
     def __init__(self, host, queue):
+        credentials = Database().get_credentials(host)
+        credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host)
+            pika.ConnectionParameters(host=host, credentials=credentials)
         )
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue)

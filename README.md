@@ -17,6 +17,14 @@ Create a new user on Github and then create an API Key with at least *push, clon
 
 Now, add this user to the organization you just created. That can be done from: https://github.com/orgs/YOUR-ORG/people, where "YOUR_ORG" is the name of the organization you created before.
 
+# Common steps
+
+Create the user-password combinations for the rabbit queues
+```bash
+printf <user> | docker secret create rabbit-user
+printf <pass> | docker secret create rabbit-pass
+```
+
 # Running locally:
 
 ## What you need

@@ -79,6 +79,25 @@ class Database(object):
         )
         clear_cache('config')
 
+    def save_credentials(self, host, username, password):
+        config = self.config.find_one()
+        self.config.update_one(
+            {'_id': config['_id']}, 
+            {
+                '$set': {
+                    'credentials': {
+                        host: {
+                            'username': username,
+                            'password': password
+                        }
+                    }
+                }
+            }
+        )
+    
+    def get_credentials(self, host):
+        return self.config.find_one()['credentials'].get(host)
+
     def create_organization_if_not_exists(self, org_id, org_name):
         if not self.get_organization_config(org_id):
             self.orgs.insert_one({
