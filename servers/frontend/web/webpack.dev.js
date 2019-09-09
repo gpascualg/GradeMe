@@ -55,7 +55,7 @@ module.exports = merge(common, {
     },
     plugins: [
         new ExtractTextPlugin({
-            filename: (getPath) => getPath('css/[name].css'),
+            filename: (getPath) => getPath('static/css/[name].css'),
             allChunks: true,
         }),
         new webpack.HotModuleReplacementPlugin(),

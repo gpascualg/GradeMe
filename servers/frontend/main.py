@@ -6,6 +6,7 @@ from flask_session import Session
 import argparse
 import json
 import math
+import os
 
 from ..common.database import Database
 
@@ -88,6 +89,9 @@ def main():
     app.config['SESSION_TYPE'] = 'mongodb'
     app.config['SESSION_MONGODB'] = Database().client
     app.config['CORS_HEADERS'] = 'Content-Type'
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    app.config['STATIC_FOLDER'] = os.path.join(dir_path, 'static')
 
     CORS(app)
     Session(app)

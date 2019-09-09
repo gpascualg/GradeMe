@@ -9,8 +9,8 @@ module.exports = {
     },
     output: {
         path: resolve(__dirname, 'dist'),
-        filename: 'js/[name]-bundle.js',
-        chunkFilename: 'js/[name]-chunk.js',
+        filename: 'static/js/[name]-bundle.js',
+        chunkFilename: 'static/js/[name]-chunk.js',
     },
     module: {
         rules: [{
@@ -25,7 +25,7 @@ module.exports = {
             options: {
                 name: '[name].[ext]',
                 publicPath: '../fonts/',
-                outputPath: 'fonts/',
+                outputPath: 'static/fonts/',
             },
         }, {
             test: /\.(png|jpg|gif)$/,
@@ -33,7 +33,7 @@ module.exports = {
             options: {
                 name: '[name].[ext]',
                 publicPath: '../images/',
-                outputPath: 'images/',
+                outputPath: 'static/images/',
             },
         }, {
             test: /\.js$/,

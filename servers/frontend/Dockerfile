@@ -14,10 +14,7 @@ RUN cd /code/servers/frontend/web && \
 	rm -rf node_modules && \
 	npm install && \
 	npm run build && \
-	mkdir -p ../{static,templates} && \
-	mv dist/index.html ../templates/ && \
-	mv dist/js ../static/ && \
-	mv dist/css ../static/ && \
-	mv dist/images ../static/
+	mv dist/static/* ../static/ && \
+	mv dist/index.html ../templates/ 
 
 ENTRYPOINT ["python3", "-u", "start_frontend.py"]

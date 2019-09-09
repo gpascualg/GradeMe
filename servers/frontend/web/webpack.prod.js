@@ -25,7 +25,7 @@ module.exports = merge(common, {
     plugins: [
         new CleanWebpackPlugin(['dist']),
         new ExtractTextPlugin({
-            filename: (getPath) => getPath('css/[name]-[hash].css'),
+            filename: (getPath) => getPath('static/css/[name]-[hash].css'),
             allChunks: true,
         }),
     ],
