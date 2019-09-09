@@ -11,7 +11,7 @@ import sys
 import os
 
 from ..common.database import Database
-from ..common.logger import logger
+from ..common.logger import logger, setup_logger
 from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
 

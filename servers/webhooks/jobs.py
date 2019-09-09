@@ -8,6 +8,7 @@ import tempfile
 from os.path import basename
 
 from ..common.database import Database
+from ..common.logger import logger
 from ..docker.sender import MessageSender
 from ..docker.message_type import MessageType
 
@@ -38,6 +39,7 @@ def process_job(meta, oauth_token):
     retrieve_stdout(['docker', 'network', 'connect', 'results', instance_name])
     
     MessageSender('rabbit', 'jobs').send(MessageType.JOB_STARTED, meta)
+    logger.info(f'Sending message JOB_STARTED')
 
     return meta, retrieve_stdout(['docker', 'start', '-a', instance_name])
     
@@ -58,10 +60,12 @@ class Jobs(object):
         meta, log = result
         Database().set_instance_log(meta['org']['id'], meta['repo']['id'], meta['hash'], meta['branch'], log)
         MessageSender('rabbit', 'jobs').send(MessageType.JOB_ENDED, meta)
+        logger.info(f'Sending message JOB_ENDED')
         return True
     
     def post(self, meta):
         MessageSender('rabbit', 'jobs').send(MessageType.JOB_QUEUED, meta)
+        logger.info(f'Sending message JOB_QUEUED')
 
         if os.environ.get('DISABLE_POOL'):
             return self.__once_done(process_job(meta, self.oauth_token))
