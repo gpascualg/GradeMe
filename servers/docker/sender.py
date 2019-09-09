@@ -1,5 +1,6 @@
 import pika
 import json
+from threading import Thread
 
 from .message_type import MessageType
 from ..common.database import Database
@@ -17,12 +18,21 @@ class MessageSender(object):
     def __init__(self, host, queue):
         credentials = Database().get_credentials(host)
         credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
-        self.connection = pika.BlockingConnection(
+        self.connection = pika.SelectConnection(
             pika.ConnectionParameters(host=host, credentials=credentials)
         )
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue)
+        self.channel.confirm_delivery()
         self.queue = queue
+        self.thread = Thread(target=self.run)
+        self.thread.start()
+        
+    def run(self):
+        try:
+            self.connection.sleep(0.1)
+        except:
+            MessageListener.__instance[self.queue] = None
 
     def import_error(self, **data):
         self.send(MessageType.IMPORT_ERROR, data)
