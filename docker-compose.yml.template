@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 services:
   webhooks:
     build: 
@@ -8,13 +8,16 @@ services:
       - 8080:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - rabbit-user
+      - rabbit-pass
+      - secret-key
     depends_on:
       - mongo
       - rabbit
-      - rabbit-private
     networks:
       - backend
-    command: --no-cli --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=mongo --host=0.0.0.0 --port=80
+    command: --no-cli --github-fake-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=mongo --host=0.0.0.0 --port=80
 
   frontend:
     build:
@@ -24,7 +27,6 @@ services:
       - 9090:80
     depends_on:
       - mongo
-      - rabbit-private
     networks:
       - backend
     command: --mongo-host=mongo --host=0.0.0.0 --port=80
@@ -94,7 +96,8 @@ volumes:
 
 secrets:
   rabbit-user:
-    external: true
-
+    file: rabbit-user.txt
   rabbit-pass:
-    external: true
+    file: rabbit-pass.txt
+  secret-key:
+    file: secret-key.txt

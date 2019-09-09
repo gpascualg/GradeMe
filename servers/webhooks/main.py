@@ -65,10 +65,7 @@ def main():
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--github-api-key', help='API key for the master user')
     parser.add_argument('--github-org', action='append', help='Initial Github organitzation(s)', type=str)
-    parser.add_argument('--github-org-id', action='append', help='Initial Github organitzation(s)', type=int)
-    parser.add_argument('--broadcast-host', default='localhost', help='Docker intercomunnication tool host')
-    parser.add_argument('--broadcast-port', type=int, default=6000, help='Docker intercomunication tool port')
-    parser.add_argument('--broadcast-secret', type=str, help='Shared secret between dockers')
+    parser.add_argument('--github-fake-id', action='append', help='Initial Github organitzation(s)', type=int)
     parser.add_argument('--mongo-host', default='mongo', help='MongoDB hostname')
     parser.add_argument('--no-github-init', action='store_true', default=False, help='Do not fetch Github data')
     parser.add_argument('--no-cli', action='store_true', help='Do not display CLI')
@@ -92,7 +89,8 @@ def main():
 
     # Configure Flask app
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'iuy81273ADIwqe2/·gqeWÇQE239qje'
+    with open('/run/secrets/secret-key') as fp:
+        app.config['SECRET_KEY'] = fp.read().strip()
 
     # Save config and api key
     Database().ensure_configured()
@@ -100,14 +98,14 @@ def main():
 
     # Save rabbit credentials
     with open('/run/secrets/rabbit-user') as fp:
-        rabbit_username = fp.read()
+        rabbit_username = fp.read().strip()
     with open('/run/secrets/rabbit-pass') as fp:
-        rabbit_password = fp.read()
+        rabbit_password = fp.read().strip()
 
     Database().save_credentials('rabbit', rabbit_username, rabbit_password)
     
     # Create, if not-existing, organizations
-    for org in args.github_org_id or []:
+    for org in args.github_fake_id or []:
         Database().create_organization_if_not_exists(org, 'fake-org-{}'.format(org))
 
     # Make sure we have all users, admins, etc.
@@ -147,8 +145,8 @@ def main():
         print(limits.core.reset)
 
     # Mocking purposes
-    if args.github_org_id:
-        GithubMethods.MOCK_ORG_ID = args.github_org_id[0]
+    if args.github_fake_id:
+        GithubMethods.MOCK_ORG_ID = args.github_fake_id[0]
 
     # Command line and info
     if not args.no_cli:

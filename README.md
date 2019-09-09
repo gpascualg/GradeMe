@@ -59,19 +59,19 @@ Build now (and everytime you change agents), build the dockers (you might need `
 Start the webhooks/tests server with
 
 ```bash
-python start_service.py --github-api-key=<YOUR API KEY> --github-org=<YOUR ORGANIZATION NAME> --broadcast-secret=<SOME RANDOM LETTERS> --mongo-host=localhost
+python start_service.py --github-api-key=<YOUR API KEY> --github-org=<YOUR ORGANIZATION NAME> --mongo-host=localhost
 ```
 
 For example:
 
 ```bash
-python start_service.py --port 8080 --github-org-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
+python start_service.py --port 8080 --github-fake-id=123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=localhost
 ```
 
 Processing tests synchronously instead of in a processes pool can be achieved by setting the environment variable `DISABLE_POOL` to 1, for example:
 
 ```bash
-DISABLE_POOL=1 python start_service.py --github-api-key=231af25d0 --github-org=TNUI-UB --broadcast-secret=qwead123 --mongo-host=localhost
+DISABLE_POOL=1 python start_service.py --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=localhost
 ```
 
 This proves to be useful when debugging `Job`s or blocking for tests completion.
