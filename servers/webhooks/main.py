@@ -55,21 +55,24 @@ def setup_app_routes(app):
         
         logger.info(f'Webhook event is {event}')
 
-        if event == 'repository':
-            return GithubMethods.repository(payload)
-        elif event == 'member':
-            return GithubMethods.member(payload)
-        elif event == 'membership':
-            return GithubMethods.github_membership_webhook(payload)
-        elif event == 'team_add':
-            return GithubMethods.github_team_add_webhook(payload)
-        elif event == 'push':
-            return GithubMethods.github_push_webhook(payload)
-        elif event == 'organization':
-            return GithubMethods.github_organization_webhook(payload)
+        try:
+            if event == 'repository':
+                return GithubMethods.repository(payload)
+            elif event == 'member':
+                return GithubMethods.member(payload)
+            elif event == 'membership':
+                return GithubMethods.github_membership_webhook(payload)
+            elif event == 'team_add':
+                return GithubMethods.github_team_add_webhook(payload)
+            elif event == 'push':
+                return GithubMethods.github_push_webhook(payload)
+            elif event == 'organization':
+                return GithubMethods.github_organization_webhook(payload)
 
-        return json.dumps({"status": "skipped"})
-
+            return json.dumps({"status": "skipped"})
+        except:
+            logger.exception("Fatal error in main loop")
+            abort(500)
 
 def main():
     # New organizations to use
