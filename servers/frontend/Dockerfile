@@ -17,4 +17,4 @@ RUN cd /code/servers/frontend/web && \
 	mv dist/static/* ../static/ && \
 	mv dist/index.html ../templates/ 
 
-ENTRYPOINT ["./wait-for-it.sh", "rabbit:5672", "--", "python3", "-u", "start_frontend.py"]
+ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "python3", "-u", "start_frontend.py"]
