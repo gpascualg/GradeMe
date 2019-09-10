@@ -13,8 +13,6 @@ def main():
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--mongo-host', default='mongo', help='MongoDB hostname')
     parser.add_argument('--branch', type=str, help='Branch on which tests are triggered', required=True)
-    parser.add_argument('--yml', help='Destination for the yml file', required=True)
-    parser.add_argument('--branch', type=str, help='Branch on which tests are triggered', required=True)
     parser.add_argument('--max-per-day', type=int, help='Maximum amount of tries per day', required=True)
     parser.add_argument('--execute', type=str, help='What to execute in the server', required=True)
     parser.add_argument('--language', type=str, help='Agent to run tests in', required=True)
@@ -34,12 +32,7 @@ def main():
         
         serialized_contents = yaml.dump(data, encoding='utf-8')
         data['checksum'] = hashlib.sha256(serialized_contents).hexdigest()
-        print(data['checksum'])
-
-        shutil.copyfile(filepath, filepath + '.old')
-        with open(filepath, 'w') as fp:
-            yaml.dump(data, fp, encoding='utf-8', default_flow_style=False)
-
+        print(data)
         return 0
     except:
         return 2
