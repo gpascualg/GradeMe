@@ -3,12 +3,14 @@ from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, send, emit
 from flask_github import GitHub
 from flask_session import Session
+from threading import Thread
 import argparse
 import json
 import math
 import os
 
 from ..common.database import Database
+from ..docker.listener import MessageListener
 
 
 def setup_app_routes(app, github, socketio):
@@ -81,7 +83,13 @@ def main():
     parser.add_argument('--debug', action='store_true', help='Run server in debug mode')    
     args = parser.parse_args()
 
+    # Start database
     Database.initialize(args.mongo_host)
+
+    # TODO(gpascualg): Move this somewhere else
+    results = MessageListener('rabbit', 'jobs')
+    thread = Thread(target=results.run)
+    thread.start()
 
     app = Flask(__name__)
     app.config['GITHUB_CLIENT_ID'] = args.github_client_id
@@ -100,3 +108,5 @@ def main():
 
     setup_app_routes(app, github, socketio)
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)
+    thread.join()
+    
