@@ -97,7 +97,7 @@ def main(instance, organization_id, rabbit_channel):
 # MAIN CODE
 
 # TODO(gpascualg): Make mongodb host configurable
-Database().initialize('mongo')
+Database.initialize('mongo')
 
 exitcode = 1
 try:

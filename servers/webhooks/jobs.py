@@ -14,10 +14,10 @@ from ..docker.message_type import MessageType
 
 
 def retrieve_stdout(command):
+    logger.info('Executing: {}'.format(' '.join(command)))
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = proc.stdout.read()
     log = output.decode('utf-8').strip()
-    logger.info('Executing: {}'.format(''.join(command)))
     logger.debug(log)
     return log
 
