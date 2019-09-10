@@ -16,13 +16,16 @@ from ..docker.message_type import MessageType
 def retrieve_stdout(command):
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = proc.stdout.read()
-    return output.decode('utf-8').strip()
+    log = output.decode('utf-8').strip()
+    logger.info('Executing: {}'.format(''.join(command)))
+    logger.debug(log)
+    return log
 
 def process_job(meta, oauth_token):
     instance_path = tempfile.mkdtemp()
     instance_name = basename(instance_path)
 
-    retrieve_stdout(['docker', 'create', '-t', '--rm',
+    retrieve_stdout(['docker', 'create', '-t',
         '-e', 'GITHUB_BRANCH=' + meta['branch'],
         '-e', 'GITHUB_ORGANIZATION=' + meta['org']['name'],
         '-e', 'GITHUB_REPOSITORY=' + meta['repo']['name'],
@@ -33,6 +36,7 @@ def process_job(meta, oauth_token):
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '--mount', 'type=tmpfs,destination=/instance',
         '--network', 'backend',
+        '--rm',
         '--name', instance_name,
         'agent-bootstrap'])
 

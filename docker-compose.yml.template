@@ -91,8 +91,10 @@ services:
 networks:
   backend:
     driver: bridge
+    name: backend
   results:
     internal: true
+    name: results
 
 volumes:
   mongodb-data:
