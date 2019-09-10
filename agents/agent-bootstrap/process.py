@@ -126,6 +126,7 @@ try:
         else:
             # TODO(gpascualg): Check exit code using docker_id_or_false
             print("Instance .autograder.yml is invalid")
+            update_instance(instance, 'incorrect-yml')
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")
