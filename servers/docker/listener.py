@@ -27,13 +27,12 @@ class MessageListener(object):
     def callback(self, ch, method, properties, body):
         try:
             msg = body.split(max=1)
-            msgtype = int(msg[0])
+            msgtype = MessageType(int(msg[0]))
 
             if msgtype == MessageType.TESTS_DONE:
                 self.channel.stop_consuming()
-
             else:
-                self.messages.append((MessageType(msgtype), msg[1]))
+                self.messages.append((msgtype, msg[1]))
         except:
             self.channel.stop_consuming()
             

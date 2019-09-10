@@ -46,5 +46,5 @@ class MessageSender(object):
         MessageSender.__instance[self.queue] = None
     
     def send(self, type, data):
-        msg = '{} {}'.format(int(type), json.dumps(data))
+        msg = '{} {}'.format(int(type.value), json.dumps(data))
         self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
