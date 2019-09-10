@@ -1,6 +1,7 @@
 import pika
 import json
 from threading import Thread
+from queue import Queue
 
 from .message_type import MessageType
 from ..common.database import Database
@@ -17,6 +18,12 @@ class MessageSender(object):
 
     def __init__(self, host, queue):
         credentials = Database().get_credentials(host)
+        self.queue = queue
+        self.msgs = Queue()
+        self.thread = Thread(target=self.run, args=(credentials, host, queue))
+        self.thread.start()
+        
+    def run(self, credentials, host, queue):
         credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host, credentials=credentials)
@@ -24,15 +31,18 @@ class MessageSender(object):
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue)
         self.channel.confirm_delivery()
-        self.queue = queue
-        self.thread = Thread(target=self.run)
-        self.thread.start()
-        
-    def run(self):
-        try:
-            self.connection.sleep(0.1)
-        except:
-            MessageListener.__instance[self.queue] = None
+
+        while True:
+            try:
+                try:
+                    msg = self.msgs.get(False)
+                    self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
+                except:
+                    pass
+
+                self.connection.sleep(0.1)
+            except:
+                MessageSender.__instance[self.queue] = None
 
     def import_error(self, **data):
         self.send(MessageType.IMPORT_ERROR, data)
@@ -47,4 +57,4 @@ class MessageSender(object):
     
     def send(self, type, data):
         msg = '{} {}'.format(int(type.value), json.dumps(data))
-        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
+        self.msgs.put(msg)

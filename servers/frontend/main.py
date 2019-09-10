@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, send, emit
 from flask_github import GitHub
 from flask_session import Session
 from threading import Thread
+from queue import Queue
 import argparse
 import json
 import math
@@ -73,6 +74,10 @@ def setup_app_routes(app, github, socketio):
         before_request()
         emit('login-status', g.user is not None)
 
+def listener(messages):
+    results = MessageListener('rabbit', 'jobs', messages)
+    results.run()
+
 def main():
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--github-client-id', help='Github client id for logins')
@@ -87,8 +92,8 @@ def main():
     Database.initialize(args.mongo_host)
 
     # TODO(gpascualg): Move this somewhere else
-    results = MessageListener('rabbit', 'jobs')
-    thread = Thread(target=results.run)
+    messages = Queue()
+    thread = Thread(target=listener, args=(messages,))
     thread.start()
 
     app = Flask(__name__)

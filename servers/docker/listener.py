@@ -1,5 +1,7 @@
 import pika
 
+from queue import Queue
+
 from .message_type import MessageType
 from ..common.database import Database
 
@@ -7,13 +9,13 @@ from ..common.database import Database
 class MessageListener(object):
     __instance = {}
     
-    def __new__(cls, host, queue):
+    def __new__(cls, host, queue, messages=None):
         if MessageListener.__instance.get(queue) is None:
             MessageListener.__instance[queue] = object.__new__(cls)
             
         return MessageListener.__instance[queue]
 
-    def __init__(self, host, queue):
+    def __init__(self, host, queue, messages=None):
         credentials = Database().get_credentials(host)
         credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
         self.connection = pika.BlockingConnection(
@@ -22,7 +24,7 @@ class MessageListener(object):
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue)
         self.queue = queue
-        self.messages = []
+        self.messages = messages or Queue()
 
     def callback(self, ch, method, properties, body):
         try:
@@ -32,7 +34,7 @@ class MessageListener(object):
             if msgtype == MessageType.TESTS_DONE:
                 self.channel.stop_consuming()
             else:
-                self.messages.append((msgtype, msg[1]))
+                self.messages.put((msgtype, msg[1]))
         except:
             self.channel.stop_consuming()
             
@@ -44,5 +46,14 @@ class MessageListener(object):
         self.connection.close()
         MessageListener.__instance[self.queue] = None
 
+    def get(self):
+        messages = []
+        while True:
+            try:
+                messages.append(self.messages.get(False))
+            except:
+                break
+        return messages
+
     def json(self):
-        return [{"type": type, "data": data} for type, data in self.messages]
+        return [{"type": type, "data": data} for type, data in self.get()]
