@@ -27,6 +27,7 @@ services:
       - 9090:80
     depends_on:
       - mongo
+      - rabbit
     networks:
       - backend
     command: --mongo-host=mongo --host=0.0.0.0 --port=80
@@ -36,8 +37,8 @@ services:
     container_name: "mongo"
     volumes:
       - mongodb-data:/data/db
-    ports:
-      - 27017:27017
+    expose:
+      - 27017
     networks:
       - backend
 
@@ -51,6 +52,8 @@ services:
     secrets:
       - rabbit-user
       - rabbit-pass
+    expose:
+      - 5672
     networks:
       - results
       - backend
