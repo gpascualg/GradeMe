@@ -18,7 +18,7 @@ class MessageSender(object):
     def __init__(self, host, queue):
         credentials = Database().get_credentials(host)
         credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
-        self.connection = pika.SelectConnection(
+        self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host, credentials=credentials)
         )
         self.channel = self.connection.channel()
