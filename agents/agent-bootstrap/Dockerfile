@@ -5,7 +5,7 @@ FROM alpine:3.10
 
 RUN apk --update add --no-cache python3 py3-pip git docker && \
 	apk --update add --no-cache --virtual build-deps python3-dev build-base && \
-	pip3 install pymongo==3.4.0 PyYAML==3.12 && \
+	pip3 install pymongo==3.4.0 PyYAML==3.12 pika==1.1.0 && \
 	apk del build-deps && \
 	rm -rf /var/cache/apk/*
 
