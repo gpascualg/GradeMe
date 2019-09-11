@@ -66,18 +66,38 @@ def continue_process(instance, data, rabbit_channel):
 
     # Run detached
     return subprocess.check_output(['docker', 'run', 
-        '-d', '-t', '--rm',
+        '-d', '-t',
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
         agent_name, rabbit_channel])
+
+def on_tick(docker_id):
+    is_running = False
+
+    try:
+        data = subprocess.check_output(['docker', 'inspect', docker_id])
+        data = json.loads(data)
+        is_running = data[0]['State']['Running']
+    except:
+        pass
+
+    if not is_running:
+        logs = subprocess.check_output(['docker', 'logs', docker_id])
+        subprocess.call(['docker', 'rm', docker_id])
+
+        print('Docker not running anymore')
+        print(logs)
+    
+    return is_running
+
 
 def main(instance, organization_id, rabbit_channel):
     try:
         with open('/instance/code/.autograder.yml') as fp:
             try:
                 data = yaml.load(fp)
-            except:
+            except Exception as e:
                 print("Got an exception processing .autograder.yml: {}".format(e))
                 update_instance(instance, 'wrong-yml')
                 return False
@@ -131,7 +151,7 @@ try:
         if docker_id_or_false:
             # Block until we have all results
             results = MessageListener('rabbit', os.environ['GITHUB_COMMIT'])
-            results.run()
+            results.run(lambda: on_tick(docker_id_or_false))
 
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())

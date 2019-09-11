@@ -38,10 +38,14 @@ class MessageListener(object):
         except:
             self.channel.stop_consuming()
             
-    def run(self):
+    def run(self, on_tick=None):
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
         while self.channel._consumer_infos:
             self.channel.connection.process_data_events(time_limit=1)
+            
+            if on_tick is not None:
+                if not on_tick():
+                    self.channel.stop_consuming()
         
         self.connection.close()
         MessageListener.__instance[self.queue] = None
