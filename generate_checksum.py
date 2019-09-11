@@ -12,6 +12,7 @@ def main():
     # New organizations to use
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--mongo-host', default='mongo', help='MongoDB hostname')
+    parser.add_argument('--organization', type=str, help='Target Github organization', required=True)
     parser.add_argument('--branch', type=str, help='Branch on which tests are triggered', required=True)
     parser.add_argument('--max-per-day', type=int, help='Maximum amount of tries per day', required=True)
     parser.add_argument('--execute', type=str, help='What to execute in the server', required=True)
@@ -23,7 +24,7 @@ def main():
     try:
         data = {
             'branch': args.branch,
-            'checksum': Database().get_organization_config(args.organization)['secret'],
+            'checksum': Database().get_organization_config_by_name(args.organization)['secret'],
             'execute': args.execute,
             'language': args.language,
             'max_per_day': args.max_per_day,
@@ -37,7 +38,4 @@ def main():
     except:
         return 2
 
-parser = argparse.ArgumentParser(description='Options')
-parser.add_argument('--yml')
-args = parser.parse_args()
-sys.exit(main(args.yml))
+sys.exit(main())

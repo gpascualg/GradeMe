@@ -128,6 +128,13 @@ class Database(object):
             {'_id': 0}
         )
 
+    @cache('org/config')
+    def get_organization_config_by_name(self, org):
+        return self.orgs.find_one(
+            {'name': org},
+            {'_id': 0}
+        )
+
     @cache('org/admin')
     def get_organization_admins(self, org):
         return (u['_id'] for u in \
