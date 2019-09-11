@@ -78,8 +78,15 @@ def main(instance, organization_id, rabbit_channel):
             try:
                 data = yaml.load(fp)
             except:
+                print("Got an exception processing .autograder.yml: {}".format(e))
+                update_instance(instance, 'wrong-yml')
                 return False
+    except:
+        update_instance(instance, 'missing-yml')
+        print('.autograder-yml is missing')
+        return False
 
+    try:
         secret = Database().get_organization_config(organization_id)['secret']
         contents = copy.copy(data)
         contents['checksum'] = secret
@@ -89,12 +96,14 @@ def main(instance, organization_id, rabbit_channel):
         if checksum == data['checksum']:
             return continue_process(instance, data, rabbit_channel)
         else:
-            print("Checksum mismatch {} != {} (should be != in file)".format(checksum, data['checksum']))
+            update_instance(instance, 'checksum-mismatch')
+            print("Checksum mismatch {} != {} (should-be != in-file)".format(checksum, data['checksum']))
             return False
+
     except Exception as e:
+        update_instance(instance, 'unknown-error') # Possibly yml missing
         print("Got an exception processing .autograder.yml: {}".format(e))
         return False
-
 
 ######################################################################################
 # MAIN CODE
@@ -117,7 +126,8 @@ try:
     else:
         # Make sure noone can connect directly
         docker_id_or_false = main(instance, int(os.environ['GITHUB_ORGANIZATION_ID']), os.environ['GITHUB_COMMIT'])
-
+        
+        # If it is False then processing stopped
         if docker_id_or_false:
             # Block until we have all results
             results = MessageListener('rabbit', os.environ['GITHUB_COMMIT'])
@@ -126,10 +136,7 @@ try:
             # Once we reach here it's done
             update_instance(instance, 'done', results.json())
             exitcode = 0
-        else:
-            # TODO(gpascualg): Check exit code using docker_id_or_false
-            print("Instance .autograder.yml is invalid")
-            update_instance(instance, 'incorrect-yml')
+            
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")
