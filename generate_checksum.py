@@ -25,7 +25,7 @@ def main():
         data = {
             'branch': args.branch,
             'checksum': Database().get_organization_config_by_name(args.organization)['secret'],
-            'testset': args.execute,
+            'testset': args.testset,
             'language': args.language,
             'max_per_day': args.max_per_day,
             'version': 3

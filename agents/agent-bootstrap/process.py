@@ -70,7 +70,7 @@ def continue_process(instance, data, rabbit_channel):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, rabbit_channel])
+        agent_name, rabbit_channel], stderr=subprocess.STDOUT)
     
     return docker_id.strip()
 
@@ -78,7 +78,7 @@ def on_tick(docker_id):
     is_running = False
 
     try:
-        data = subprocess.check_output(['docker', 'inspect', docker_id])
+        data = subprocess.check_output(['docker', 'inspect', docker_id], stderr=subprocess.STDOUT)
         data = json.loads(data)
         is_running = data[0]['State']['Running']
     except:
@@ -86,7 +86,7 @@ def on_tick(docker_id):
 
     if not is_running:
         print('Docker not running anymore')
-        logs = subprocess.check_output(['docker', 'logs', docker_id])
+        logs = subprocess.check_output(['docker', 'logs', docker_id], stderr=subprocess.STDOUT)
         print(logs)
     
     return is_running
@@ -107,6 +107,12 @@ def main(instance, organization_id, rabbit_channel):
         return False
 
     try:
+        # TODO(gpascualg): Do not hardcode version here...
+        if data['version'] != 3:
+            update_instance(instance, 'version-mismatch')
+            print("Version mismatch {} != {} (should-be != in-file)".format(3, data['version']))
+            return False
+
         secret = Database().get_organization_config(organization_id)['secret']
         contents = copy.copy(data)
         contents['checksum'] = secret
@@ -155,7 +161,7 @@ try:
 
             exitcode = 1
             try:
-                inspect = subprocess.call(['docker', 'inspect', docker_id_or_false])
+                inspect = subprocess.check_output(['docker', 'inspect', docker_id_or_false], stderr=subprocess.STDOUT)
                 inspect = json.loads(inspect)
                 exitcode = inspect[0]['State']['ExitCode']
             except:
