@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--organization', type=str, help='Target Github organization', required=True)
     parser.add_argument('--branch', type=str, help='Branch on which tests are triggered', required=True)
     parser.add_argument('--max-per-day', type=int, help='Maximum amount of tries per day', required=True)
-    parser.add_argument('--execute', type=str, help='What to execute in the server', required=True)
+    parser.add_argument('--testset', type=str, help='What to execute in the server', required=True)
     parser.add_argument('--language', type=str, help='Agent to run tests in', required=True)
     args = parser.parse_args()
 
@@ -25,7 +25,7 @@ def main():
         data = {
             'branch': args.branch,
             'checksum': Database().get_organization_config_by_name(args.organization)['secret'],
-            'execute': args.execute,
+            'testset': args.execute,
             'language': args.language,
             'max_per_day': args.max_per_day,
             'version': 3

@@ -62,15 +62,17 @@ def continue_process(instance, data, rabbit_channel):
         update_instance(instance, 'non-existing-agent')
         return False
 
-    volume_name = os.environ['GITHUB_ORGANIZATION_ID'] + '-' + data['execute']
+    volume_name = os.environ['GITHUB_ORGANIZATION_ID'] + '-' + data['testset']
 
     # Run detached
-    return subprocess.check_output(['docker', 'run', 
+    docker_id = subprocess.check_output(['docker', 'run', 
         '-d', '-t',
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
         agent_name, rabbit_channel])
+    
+    return docker_id.strip()
 
 def on_tick(docker_id):
     is_running = False
@@ -83,10 +85,8 @@ def on_tick(docker_id):
         pass
 
     if not is_running:
-        logs = subprocess.check_output(['docker', 'logs', docker_id])
-        subprocess.call(['docker', 'rm', docker_id])
-
         print('Docker not running anymore')
+        logs = subprocess.check_output(['docker', 'logs', docker_id])
         print(logs)
     
     return is_running
@@ -153,10 +153,16 @@ try:
             results = MessageListener('rabbit', os.environ['GITHUB_COMMIT'])
             results.run(lambda: on_tick(docker_id_or_false))
 
-            # Once we reach here it's done
-            update_instance(instance, 'done', results.json())
-            exitcode = 0
-            
+            exitcode = 1
+            try:
+                inspect = subprocess.call(['docker', 'inspect', docker_id_or_false])
+                inspect = json.loads(inspect)
+                exitcode = inspect[0]['State']['ExitCode']
+            except:
+                pass
+
+            update_instance(instance, 'done' if exitcode == 0 else 'execution-error', results.json())
+            subprocess.call(['docker', 'rm', docker_id_or_false])
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")
