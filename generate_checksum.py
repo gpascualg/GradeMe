@@ -33,7 +33,7 @@ def main():
         
         serialized_contents = yaml.dump(data, encoding='utf-8')
         data['checksum'] = hashlib.sha256(serialized_contents).hexdigest()
-        print(data)
+        yaml.dump(data, sys.stdout, default_flow_style=False)
         return 0
     except:
         return 2

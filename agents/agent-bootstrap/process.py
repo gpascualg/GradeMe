@@ -85,11 +85,14 @@ def main(instance, organization_id, rabbit_channel):
         contents['checksum'] = secret
         contents = yaml.dump(contents, encoding='utf-8')
 
-        if hashlib.sha256(contents).hexdigest() == data['checksum']:
+        checksum = hashlib.sha256(contents).hexdigest()
+        if checksum == data['checksum']:
             return continue_process(instance, data, rabbit_channel)
         else:
+            print("Checksum mismatch {} != {} (should be != in file)".format(checksum, data['checksum']))
             return False
-    except:
+    except Exception as e:
+        print("Got an exception processing .autograder.yml: {}".format(e))
         return False
 
 
