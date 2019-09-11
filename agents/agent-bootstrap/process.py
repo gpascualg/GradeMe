@@ -33,7 +33,7 @@ def update_instance(instance, status, results=[]):
 
 def continue_process(instance, data, rabbit_channel):
     if 'branch' in data:
-        if data['branch'] != instance['_id']['branch']:
+        if data['branch'] != instance['instances'][0]['branch']:
             update_instance(instance, 'branch-mismatch')
             print('> Skipped due to branch mismatch')
             return False
