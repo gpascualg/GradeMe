@@ -62,7 +62,7 @@ def continue_process(instance, data, rabbit_channel):
         update_instance(instance, 'non-existing-agent')
         return False
 
-    volume_name = os.environ['GITHUB_ORGANIZATION_ID'] + '-' + data['testset']
+    volume_name = os.environ['GITHUB_ORGANIZATION'] + '-' + data['testset']
 
     # Run detached
     docker_id = subprocess.check_output(['docker', 'run', 
