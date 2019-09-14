@@ -13,7 +13,7 @@ import io from 'socket.io-client';
 
 const $root = document.body.querySelector('#root');
 
-let socketio_url = $root.dataset.mode == 'development' ? 'localhost:9090' : 'grademe.education';
+let socketio_url = $root.dataset.mode == 'development' ? 'localhost:9090' : 'grade-me.education';
 const socket = io('http://' + socketio_url);
 
 let onceDBReady = new Promise((resolve) => {
