@@ -278,12 +278,12 @@ class Database(object):
             for username in team['users']:
                 access_rights.append({
                     'id': username,
-                    'permission': 'user'
+                    'permission': 'member'
                 })
 
         # Always add pusher
         if all(p['id'] != pusher for p in access_rights):
-            access_rights = [{'id': pusher, 'permission': 'user'}]
+            access_rights = [{'id': pusher, 'permission': 'member'}]
 
         self.repos.insert_one(
             {
@@ -324,7 +324,7 @@ class Database(object):
             {
                 '$addToSet':
                 {
-                    'permissions': {'id': member, 'permission': 'user'}
+                    'permissions': {'id': member, 'permission': 'member'}
                 }
             }
         )
@@ -335,7 +335,7 @@ class Database(object):
             {
                 '$pull':
                 {
-                    'permissions': {'id': member, 'permission': 'user'}
+                    'permissions': {'id': member, 'permission': 'member'}
                 }
             }
         )
