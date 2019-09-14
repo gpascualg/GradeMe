@@ -282,7 +282,7 @@ class Database(object):
                 merged = itertools.product([repo['_id']], repo['instances'])
                 merged = [{'repo-name': repo['name'], 'org-name': org_name, **x, **y} for x, y in merged]
                 # TODO(gpascualg): Maybe we do need logs somewhere?
-                merged = [{k: v for k, v in instance if k != 'log'} for instance in merged]
+                merged = [{k: v for k, v in instance.items() if k != 'log'} for instance in merged]
                 merged = sorted(merged, key=lambda instance: instance['timestamp'])
                 yield merged
 
