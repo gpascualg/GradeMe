@@ -44,6 +44,9 @@ def setup_app_routes(app, github, socketio, debug):
 
         user = Database().user_by_oauth(oauth_token)
         if user is None:
+            # So that access_token_getter works
+            g.user = {'oauth': oauth_token}
+
             github_user = github.get('/user')
             if not Database().update_oauth(github_user['id'], oauth_token):
                 print("Authorization failed - Id not matched")
