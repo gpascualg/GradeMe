@@ -100,7 +100,7 @@ let onceSocketReady = new Promise((resolve) => {
     });
 
     socket.on('login-status', function(result) {
-        resolve(result);
+        resolve(socket, result);
     });
 });
 
@@ -116,21 +116,21 @@ const Routes = {
         },
     },
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
-        onceSocketReady.then((user_information) => {
+        onceSocketReady.then((socket, user_information) => {
             if (user_information) {
                 fetch(db, 'last', 'id').then((data) => {
-                    console.log(data);
-                    resolve(() => {
-                        return {
-                            'instances': [
-                                {id: 1, name: 'test', color: 'red'},
-                                {id: 2, name: 'test', color: 'green'},
-                                {id: 3, name: 'test', color: 'orange'},
-                                {id: 4, name: 'test', color: 'gren'},
-                                {id: 5, name: 'test', color: 'red'},
-                            ],
-                        };
+                    console.log('last ' + data);
+
+                    socket.once('user-instances', (instances) => {
+                        console.log(instances);
+                        resolve(() => {
+                            return {
+                                'instances': instances
+                            }
+                        });
                     });
+
+                    socket.emit('fetch-instances');
                 });
             } 
             else {

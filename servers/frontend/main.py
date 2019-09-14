@@ -14,6 +14,8 @@ from ..common.database import Database
 from ..docker.listener import MessageListener
 
 
+NOT_BROADCASTABLE_FIELDS = ['oauth']
+
 def setup_app_routes(app, github, socketio, debug):
 
     @app.before_request
@@ -76,7 +78,8 @@ def setup_app_routes(app, github, socketio, debug):
         if debug and g.user is None:
             emit('login-status', {'_id': 0, 'username': 'debug-username'})
         else:
-            emit('login-status', g.user)
+            user = {k: v for k, v in g.user.items() if k not in NOT_BROADCASTABLE_FIELDS}
+            emit('login-status', user)
 
     @socketio.on('fetch-instances')
     def fetch_instances():
