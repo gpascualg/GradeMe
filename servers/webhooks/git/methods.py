@@ -14,10 +14,11 @@ class GithubMethods(object):
         action = payload['action']
         org = payload['repository']['owner']['id']
         repo = payload['repository']['id']
+        name = payload['repository']['name']
         author = payload['sender']['id']
 
         if action == 'created':
-            Database().create_repository(org, repo, author)
+            Database().create_repository(org, repo, name, author)
         elif action == 'deleted':
             Database().remove_repository(org, repo)
 
@@ -124,6 +125,7 @@ class GithubMethods(object):
         # All current events have a repository, but some legacy events do not
         org = payload['repository']['owner']['id']
         repo = payload['repository']['id']
+        name = payload['repository']['name']
         author = payload['sender']['id']
         sha = payload['after']
 
@@ -142,7 +144,7 @@ class GithubMethods(object):
         # Does this repository already exist?
         if Database().get_repository(org, repo) is None:
             logger.info(f'Created repo')
-            Database().create_repository(org, repo, author)
+            Database().create_repository(org, repo, name, author)
 
         # Create a test based on the commit message
         commit = filter(lambda x: x['id'] == sha, payload['commits'])

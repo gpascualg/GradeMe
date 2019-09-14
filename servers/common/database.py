@@ -122,6 +122,13 @@ class Database(object):
             return (o['name'] for o in self.orgs.find({'fake': False}))
         return (o['name'] for o in self.orgs.find({}))
 
+    @cache('org/name')
+    def get_organization_name(self, id):
+        org = self.orgs.find_one({'_id': id})
+        if org:
+            return org['name']
+        return '<not-found>'
+
     @cache('org/config')
     def get_organization_config(self, org):
         return self.orgs.find_one(
@@ -245,10 +252,11 @@ class Database(object):
         )
 
     def user_instances(self, user):
-        orgs_where_admin = self.users.find(
+        orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
-            {'orgs' : 1}
+            {'orgs.$' : 1}
         )
+        orgs_where_admin = orgs_where_admin or {'orgs': []}
 
         user_repos = self.repos.find(
             {
@@ -260,21 +268,28 @@ class Database(object):
             },
             {
                 '_id': 1,
+                'name': 1,
                 'instances': 1
             }
         )
 
+        # TODO(gpascualg): This could be done all within mongo by "aggrate $unwind"
+
         # Merge into single objects
         def merger(user_repos):
             for repo in user_repos:
-                merged = itertools.product(repo['_id'], repo['instances'])
+                org_name = self.get_organization_name(repo['_id']['org'])
+                merged = itertools.product([repo['_id']], repo['instances'])
+                merged = [{'repo-name': repo['name'], 'org-name': org_name, **x, **y} for x, y in merged]
+                # TODO(gpascualg): Maybe we do need logs somewhere?
+                merged = [{k: v for k, v in instance if k != 'log'} for instance in merged]
                 merged = sorted(merged, key=lambda instance: instance['timestamp'])
                 yield merged
 
         return list(merger(user_repos))
 
 
-    def create_repository(self, org, repo, pusher):
+    def create_repository(self, org, repo, name, pusher):
         # Search if repo has any team
         access_rights = []
 
@@ -296,6 +311,7 @@ class Database(object):
                     'org': org,
                     'repo': repo
                 },
+                'name': name,
                 'access_rights': access_rights,
                 'instances': [],
                 'daily_usage': {}
