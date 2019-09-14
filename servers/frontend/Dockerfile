@@ -17,4 +17,6 @@ RUN cd /code/servers/frontend/web && \
 	mv dist/static/* ../static/ && \
 	mv dist/index.html ../templates/ 
 
+VOLUME ["/static"]
+
 ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "python3", "-u", "start_frontend.py"]

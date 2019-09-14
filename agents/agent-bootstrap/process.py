@@ -148,7 +148,7 @@ try:
     
     if instance is None:
         print('Could not find instance, should never happen')
-        # TODO(gpascualg): Notify error
+        update_instance(instance, 'fatal')
     else:
         # Make sure noone can connect directly
         docker_id_or_false = main(instance, int(os.environ['GITHUB_ORGANIZATION_ID']), os.environ['GITHUB_COMMIT'])
