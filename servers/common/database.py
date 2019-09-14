@@ -420,11 +420,7 @@ class Database(object):
         return result.matched_count == 1
 
     def user_by_oauth(self, oauth):
-        result = self.users.find_one({'oauth': oauth})
-        if result is not None:
-            return result
-
-        return None
+        return self.users.find_one({'oauth': oauth})
 
     def user(self, id):
         return self.users.find_one({'_id': id})

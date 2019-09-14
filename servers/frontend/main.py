@@ -39,16 +39,14 @@ def setup_app_routes(app, github, socketio, debug):
     def authorized(oauth_token):
         next_url = request.args.get('next') or url_for('index')
         if oauth_token is None:
-            flash("Authorization failed.")
+            print("Authorization failed - Missing oauth")
             return redirect(next_url)
 
         user = Database().user_by_oauth(oauth_token)
         if user is None:
-            g.user = {'oauth': oauth_token}
-
             github_user = github.get('/user')
             if not Database().update_oauth(github_user['id'], oauth_token):
-                flash("Authorization failed.")
+                print("Authorization failed - Id not matched")
                 return redirect(next_url)
 
             user = Database().user_by_oauth(oauth_token)
