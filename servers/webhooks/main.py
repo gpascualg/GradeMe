@@ -142,17 +142,17 @@ def main():
             # Update members
             for user in org.get_members(role='member'):
                 logger.info(f'Updating member {user.login}')
-                Database().Try().add_organization_member(org.id, user.id, user.login, 'member')
+                Database().add_organization_member(org.id, user.id, user.login, 'member')
 
             # Update admin
             for user in org.get_members(role='admin'):
                 logger.info(f'Updating admin {user.login}')
-                Database().Try().add_organization_member(org.id, user.id, user.login, 'admin')
+                Database().add_organization_member(org.id, user.id, user.login, 'admin')
 
             # Fetch collaborators too
             for collab in org.get_outside_collaborators():
                 logger.info(f'Updating outside collab {collab.login}')
-                Database().Try().add_organization_member(org.id, collab.id, collab.login, 'member')
+                Database().add_organization_member(org.id, collab.id, collab.login, 'member')
 
             # Update teams
             for team in org.get_teams():

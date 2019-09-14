@@ -139,7 +139,7 @@ class Database(object):
     @cache('org/admin')
     def get_organization_admins(self, org):
         return (u['_id'] for u in \
-            self.users.find({'orgs': {org: {'admin': True}}}))
+            self.users.find({'orgs': {'id': org, 'admin': True}}))
 
     def add_organization_member(self, org, member, name, permission):
         result = self.users.update_one(
@@ -149,10 +149,8 @@ class Database(object):
                 {
                     'orgs': 
                     {
-                        org :
-                        {
-                            permission: True
-                        }
+                        'id': org,
+                        permission: True
                     }
                 }
             }
@@ -165,10 +163,8 @@ class Database(object):
                     'name': name,
                     'orgs': [
                         {
-                            org :
-                            {
-                                permission: True
-                            }
+                            'id': org,
+                            permission: True
                         }
                     ],
                     'oauth': ''
@@ -184,7 +180,7 @@ class Database(object):
             {
                 '$pull':
                 {
-                    'orgs': org
+                    'orgs.id': org
                 }
             }
         )
