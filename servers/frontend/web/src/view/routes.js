@@ -100,7 +100,7 @@ let onceSocketReady = new Promise((resolve) => {
     });
 
     socket.on('login-status', function(result) {
-        resolve(socket, result);
+        resolve([socket, result]);
     });
 });
 
@@ -116,8 +116,8 @@ const Routes = {
         },
     },
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
-        onceSocketReady.then((socket, user_information) => {
-            if (user_information) {
+        onceSocketReady.then(([socket, user_information]) => {
+            if (user_information != null) {
                 fetch(db, 'last', 'id').then((data) => {
                     console.log('last ' + data);
 

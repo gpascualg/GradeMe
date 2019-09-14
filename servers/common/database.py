@@ -245,9 +245,18 @@ class Database(object):
         )
 
     def user_instances(self, user):
+        orgs_where_admin = self.users.find(
+            {'_id' : user, 'orgs.admin' : True},
+            {'orgs' : 1}
+        )
+
         user_repos = self.repos.find(
             {
-                'access_rights.id': user
+                '$or': 
+                [
+                    { 'access_rights.id': user },
+                    *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
+                ]
             },
             {
                 '_id': 1,

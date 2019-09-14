@@ -75,11 +75,13 @@ def setup_app_routes(app, github, socketio, debug):
     def is_user_logged():
         before_request()
 
+        user = None
         if debug and g.user is None:
-            emit('login-status', {'_id': 0, 'username': 'debug-username'})
-        else:
+            user = {'_id': 0, 'username': 'debug-username'}
+        elif g.user is not None:
             user = {k: v for k, v in g.user.items() if k not in NOT_BROADCASTABLE_FIELDS}
-            emit('login-status', user)
+            
+        emit('login-status', user)
 
     @socketio.on('fetch-instances')
     def fetch_instances():
