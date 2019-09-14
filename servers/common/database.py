@@ -1,5 +1,4 @@
 from pymongo import MongoClient, ASCENDING
-from bson.objectid import ObjectId
 from datetime import datetime
 
 import random
@@ -410,7 +409,7 @@ class Database(object):
 
     def update_oauth(self, id, oauth):
         result = self.users.update_one(
-            {'_id': ObjectId(id)},
+            {'_id': id},
             {
                 '$set': 
                 {
@@ -428,7 +427,7 @@ class Database(object):
         return None
 
     def user(self, id):
-        return self.users.find_one({'_id': ObjectId(id)})
+        return self.users.find_one({'_id': id})
 
     def Try(self):
         def wrap(f):
