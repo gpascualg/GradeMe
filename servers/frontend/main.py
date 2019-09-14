@@ -14,7 +14,7 @@ from ..common.database import Database
 from ..docker.listener import MessageListener
 
 
-def setup_app_routes(app, github, socketio):
+def setup_app_routes(app, github, socketio, debug):
 
     @app.before_request
     def before_request():
@@ -55,7 +55,6 @@ def setup_app_routes(app, github, socketio):
 
         g.user = user
         session['_id'] = user['_id']
-
         return redirect(next_url)
 
     @github.access_token_getter
@@ -72,7 +71,20 @@ def setup_app_routes(app, github, socketio):
     @socketio.on('is-logged')
     def is_user_logged():
         before_request()
-        emit('login-status', g.user is not None)
+
+        if debug and g.user is None:
+            emit('login-status', {'_id': 0, 'username': 'debug-username'})
+        else:
+            emit('login-status', g.user)
+
+    @socketio.on('fetch-instances')
+    def fetch_instances():
+        before_request()
+        if g.user is None:
+            emit('user-instances', [])
+        else:
+            emit('user-instances', Database().user_instances(g.user['_id']))
+
 
 def listener(messages):
     results = MessageListener('rabbit', 'jobs', messages)
@@ -111,7 +123,7 @@ def main():
     socketio = SocketIO(app, manage_session=False)
     github = GitHub(app)
 
-    setup_app_routes(app, github, socketio)
+    setup_app_routes(app, github, socketio, args.debug)
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)
     thread.join()
     

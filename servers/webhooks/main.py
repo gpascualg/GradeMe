@@ -139,13 +139,19 @@ def main():
             org = g.get_organization(org_name)
             Database().create_organization_if_not_exists(org.id, org_name)
 
-            # Update admins
-            for admin in org.get_members(role='admin'):
-                Database().Try().add_organization_member(org.id, admin.id, admin.name, 'admin')
+            # Update all members
+            for user in org.get_members():
+                logger.info(f'Updating user {user.login} : {user.role}')
+                Database().Try().add_organization_member(org.id, user.id, user.login, user.role)
+
+            # Fetch collaborators too
+            for collab in org.get_outside_collaborators():
+                logger.info(f'Updating user {collab.login} : {collab.role}')
+                Database().Try().add_organization_member(org.id, collab.id, collab.login, collab.role)
 
             # Update teams
             for team in org.get_teams():
-                logger.info(f'Updating team {team.name}')
+                logger.info(f'Updating team {team.login}')
 
                 # TODO: Use updated_at to cache queries
                 Database().Try().create_team(org.id, team.id)

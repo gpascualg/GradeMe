@@ -117,7 +117,7 @@ const Routes = {
     },
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
         onceSocketReady.then((user_information) => {
-            if (!user_information) {
+            if (user_information) {
                 fetch(db, 'last', 'id').then((data) => {
                     console.log(data);
                     resolve(() => {

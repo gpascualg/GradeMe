@@ -28,12 +28,18 @@ class GithubMethods(object):
     def member(payload):
         action = payload['action']
         member = payload['member']['id']
+        name = payload['member']['login']
         org = payload['repository']['owner']['id']
         repo = payload['repository']['id']
 
         if action == 'removed':
+            # TODO(gpascualg): It is not really removed from the org, but from the repo
+            #   find if it is in any other repo, if not remove
+            # Database().remove_organization_member(org, member)
+
             Database().remove_member_from_repo(org, repo, member)
         elif action == 'added':
+            Database().add_organization_member(org, member, name, 'user')
             Database().add_member_to_repo(org, repo, member)
 
         logger.info(f'Member: {action} {member} in {org}:{repo}')
@@ -77,10 +83,10 @@ class GithubMethods(object):
             return json.dumps({'status': 'skipped'})
 
         member = payload['membership']['user']['id']
-        name = payload['membership']['user']['name']
+        name = payload['membership']['user']['login']
         org = payload['organization']['id']
 
-        logger.info(f'Org. Membership: {action} to {member} ({name}) in {team}')
+        logger.info(f'Org. Membership: {action} to {member} ({name}) in {org}')
 
         if action == 'member_added':
             Database().add_organization_member(org, member, name, permission)

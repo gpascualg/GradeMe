@@ -1,8 +1,10 @@
 from pymongo import MongoClient, ASCENDING
 from bson.objectid import ObjectId
+from datetime import datetime
 
 import random
 import string
+import itertools
 
 
 CACHES = {}
@@ -138,7 +140,7 @@ class Database(object):
     @cache('org/admin')
     def get_organization_admins(self, org):
         return (u['_id'] for u in \
-            self.users.find({'orgs': {'name': org, 'permission': 'admin'}}))
+            self.users.find({'orgs': {org: {'admin': True}}}))
 
     def add_organization_member(self, org, member, name, permission):
         result = self.users.update_one(
@@ -148,22 +150,26 @@ class Database(object):
                 {
                     'orgs': 
                     {
-                        'name': org,
-                        'permission': permission
+                        org :
+                        {
+                            permission: True
+                        }
                     }
                 }
             }
         )
 
-        if result.modified_count == 0:
+        if result.matched_count == 0:
             self.users.insert_one(
                 {
                     '_id': member,
                     'name': name,
                     'orgs': [
                         {
-                            'name': org,
-                            'permission': permission
+                            org :
+                            {
+                                permission: True
+                            }
                         }
                     ],
                     'oauth': ''
@@ -179,7 +185,7 @@ class Database(object):
             {
                 '$pull':
                 {
-                    'orgs.name': org
+                    'orgs': org
                 }
             }
         )
@@ -243,6 +249,27 @@ class Database(object):
             }
         )
 
+    def user_instances(self, user):
+        user_repos = self.repos.find(
+            {
+                'access_rights.id': user
+            },
+            {
+                '_id': 1,
+                'instances': 1
+            }
+        )
+
+        # Merge into single objects
+        def merger(user_repos):
+            for repo in user_repos:
+                merged = itertools.product(repo['_id'], repo['instances'])
+                merged = sorted(merged, key=lambda instance: instance['timestamp'])
+                yield merged
+
+        return list(merger(user_repos))
+
+
     def create_repository(self, org, repo, pusher):
         # Search if repo has any team
         access_rights = []
@@ -250,13 +277,13 @@ class Database(object):
         for team in self.get_teams(org, repo):
             for username in team['users']:
                 access_rights.append({
-                    'name': username,
+                    'id': username,
                     'permission': 'user'
                 })
 
         # Always add pusher
-        if all(p['name'] != pusher for p in access_rights):
-            access_rights = [{'name': pusher, 'permission': 'user'}]
+        if all(p['id'] != pusher for p in access_rights):
+            access_rights = [{'id': pusher, 'permission': 'user'}]
 
         self.repos.insert_one(
             {
@@ -297,7 +324,7 @@ class Database(object):
             {
                 '$addToSet':
                 {
-                    'permissions': {'name': member, 'permission': 'user'}
+                    'permissions': {'id': member, 'permission': 'user'}
                 }
             }
         )
@@ -308,7 +335,7 @@ class Database(object):
             {
                 '$pull':
                 {
-                    'permissions': {'name': member, 'permission': 'user'}
+                    'permissions': {'id': member, 'permission': 'user'}
                 }
             }
         )
@@ -341,9 +368,10 @@ class Database(object):
                         'title': title,
                         'log': None,
                         'results': [],
-                        'status': 'pending'
+                        'status': 'pending',
+                        'timestamp': int(datetime.timestamp(datetime.now()))
                     }
-                } 
+                }
             }
         )
 
@@ -383,7 +411,12 @@ class Database(object):
     def update_oauth(self, id, oauth):
         result = self.users.update_one(
             {'_id': ObjectId(id)},
-            {'$set': {'oauth': oauth}}
+            {
+                '$set': 
+                {
+                    'oauth': oauth
+                }
+            }
         )
         return result.matched_count == 1
 
