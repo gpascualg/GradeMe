@@ -107,7 +107,7 @@ def main():
 
     # Configure Flask app
     app = Flask(__name__)
-    with open('/run/secrets/secret-key') as fp:
+    with open('/run/secrets/FLASK_SECRET') as fp:
         app.config['SECRET_KEY'] = fp.read().strip()
 
     # Save config and api key

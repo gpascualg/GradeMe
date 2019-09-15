@@ -82,8 +82,7 @@ def continue_process(instance, data, rabbit_channel):
         '-d', '-t',
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
-        '--mount', 'type=bind,source=/run/secrets/rabbit-user,target=/run/secrets/rabbit-user,readonly',
-        '--mount', 'type=bind,source=/run/secrets/rabbit-pass,target=/run/secrets/rabbit-pass,readonly',
+        '--mount', 'source=secrets,target=/run/secrets,readonly',
         '--network', 'results',
         agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.PIPE)
     

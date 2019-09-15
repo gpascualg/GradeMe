@@ -22,7 +22,4 @@ COPY agents/agent-bootstrap/process.py /opt/
 COPY servers/common /opt/servers/common
 COPY servers/docker /opt/servers/docker
 
-RUN touch /run/secrets/rabbit-user && \
-	touch /run/secrets/rabbit-pass
-
 CMD ["/opt/bootstrap.sh"]

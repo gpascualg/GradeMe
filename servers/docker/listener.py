@@ -15,9 +15,9 @@ class MessageListener(object):
         return MessageListener.__instance[queue]
 
     def __init__(self, host, queue, messages=None):
-        with open('/run/secrets/rabbit-user') as fp:
+        with open('/run/secrets/RABBIT_USER') as fp:
             rabbit_username = fp.read().strip()
-        with open('/run/secrets/rabbit-pass') as fp:
+        with open('/run/secrets/RABBIT_PASS') as fp:
             rabbit_password = fp.read().strip()
 
         credentials = pika.PlainCredentials(rabbit_username, rabbit_password)

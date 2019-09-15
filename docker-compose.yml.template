@@ -1,5 +1,14 @@
 version: "3.7"
 services:
+  secrets-simulator:
+    image: mikesir87/secrets-simulator
+    environment:
+      RABBIT_USER: admin
+      RABBIT_PASS: password1234
+      FLASK_SECRET: qweqwe
+    volumes:
+      - secrets:/run/secrets:rw
+
   webhooks:
     build: 
       context: .
@@ -8,13 +17,11 @@ services:
       - 8080:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    secrets:
-      - rabbit-user
-      - rabbit-pass
-      - secret-key
+      - secrets:/run/secrets:ro
     depends_on:
       - mongo
       - rabbit
+      - secrets-simulator
     networks:
       - backend
     command: --no-cli --github-fake-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=mongo --host=0.0.0.0 --port=80
@@ -25,11 +32,13 @@ services:
       dockerfile: servers/frontend/Dockerfile
     volumes:
       - /tmp/static:/static
+      - secrets:/run/secrets:ro
     ports:
       - 9090:80
     depends_on:
       - mongo
       - rabbit
+      - secrets-simulator
     networks:
       - backend
     command: --mongo-host=mongo --host=0.0.0.0 --port=80
@@ -49,11 +58,12 @@ services:
     hostname: rabbit
     container_name: rabbit
     environment:
-      - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/rabbit-user
-      - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/rabbit-pass
-    secrets:
-      - rabbit-user
-      - rabbit-pass
+      - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/RABBIT_USER
+      - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/RABBIT_PASS
+    volumes:
+      - secrets:/run/secrets:ro
+    depends_on:
+      - secrets-simulator
     expose:
       - 5672
     networks:
@@ -100,11 +110,6 @@ networks:
 
 volumes:
   mongodb-data:
-
-secrets:
-  rabbit-user:
-    file: rabbit-user.txt
-  rabbit-pass:
-    file: rabbit-pass.txt
-  secret-key:
-    file: secret-key.txt
+    driver: local
+  secrets:
+    driver: local
