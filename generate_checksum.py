@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--max-per-day', type=int, help='Maximum amount of tries per day', required=True)
     parser.add_argument('--testset', type=str, help='What to execute in the server', required=True)
     parser.add_argument('--language', type=str, help='Agent to run tests in', required=True)
+    parser.add_argument('--default', action='store_true', help='Execute default routine for this tests')
     parser.add_argument('--python-scriptify', action='store_true', help='Converts notebooks to importable python files')
     parser.add_argument('--python-importable', action='store_true', help='The source folder contains importable python files (or converted notebooks)')
     args = parser.parse_args()
@@ -30,6 +31,7 @@ def main():
             'testset': args.testset,
             'language': args.language,
             'max_per_day': args.max_per_day,
+            'default': args.default,
             'version': 3,
             'python': {
                 'scriptify': args.python_scriptify,

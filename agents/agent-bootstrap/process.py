@@ -78,7 +78,7 @@ def continue_process(instance, data, rabbit_channel):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, *agent_opts, rabbit_channel], stderr=subprocess.STDOUT)
+        agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.STDOUT)
     
     return docker_id.strip()
 

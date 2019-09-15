@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import unittest
 import logging
@@ -7,7 +5,7 @@ import atexit
 import os
 import tempfile
 
-from .docker import MessageSender
+from ..docker import MessageSender
 from .privilegies import drop_privileges
 
 
@@ -39,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     # Setup logger and client
-    logger, client = setup(args.host, args.queue)
+    setup(args.host, args.queue)
 
     # Load tests
     test_loader = unittest.TestLoader()

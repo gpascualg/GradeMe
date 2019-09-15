@@ -7,12 +7,15 @@ OPTIND=1
 # Initialize our own variables:
 scriptify=0
 importable=0
+default=0
 
 while getopts "h?vf:" opt; do
     case "$opt" in
     s)  scriptify=1
         ;;
     i)  importable=1
+        ;;
+    d)  default=1
         ;;
     esac
 done
@@ -40,6 +43,21 @@ chmod 0700 /tests
 # Add utils & docker
 export PYTHONPATH=/opt/:$PYTHONPATH
 
+# Some more vars
+AGENT_NAME=$1
+QUEUE_NAME=$2
+
 # Run
 echo "> Start tests"
-exec /tests/_/main --queue $1
+
+if [ $default -eq 1 ]
+then
+    # Run default routine for this agent
+    if [ "$AGENT_NAME" = "agent-python3" ]
+    then
+        exec python3 /opt/default.py --queue $QUEUE_NAME
+    fi
+else
+    # Run tests entrypoint
+    exec /tests/_/main --queue $QUEUE_NAME
+fi

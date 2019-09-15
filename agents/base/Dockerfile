@@ -24,6 +24,7 @@ VOLUME ["/instance"]
 
 WORKDIR /opt
 COPY agents/base/bootstrap.sh /opt/
+COPY agents/base/default.py /opt/
 COPY agents/base/utils /opt/
 COPY servers/docker /opt/
 ENTRYPOINT ["/opt/bootstrap.sh"]
