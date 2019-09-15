@@ -82,7 +82,7 @@ def continue_process(instance, data, rabbit_channel):
         '-d', '-t',
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
-        '--mount', 'source=secrets,target=/run/secrets,readonly',
+        '--mount', 'source=grademe-secrets,target=/run/secrets,readonly',
         '--network', 'results',
         agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.PIPE)
     

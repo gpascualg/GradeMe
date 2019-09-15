@@ -35,7 +35,7 @@ def process_job(meta, oauth_token):
         '-e', 'OAUTH_TOKEN=' + oauth_token,
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '--mount', 'type=tmpfs,destination=/instance',
-        '--mount', 'source=secrets,target=/run/secrets,readonly',
+        '--mount', 'source=grademe-secrets,target=/run/secrets,readonly',
         '--network', 'backend',
         '--rm',
         '--name', instance_name,
