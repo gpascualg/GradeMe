@@ -283,10 +283,11 @@ class Database(object):
                 merged = [{'repo-name': repo['name'], 'org-name': org_name, **x, **y} for x, y in merged]
                 # TODO(gpascualg): Maybe we do need logs somewhere?
                 merged = [{k: v for k, v in instance.items() if k != 'log'} for instance in merged]
-                merged = sorted(merged, key=lambda instance: instance['timestamp'])
                 yield merged
 
-        return list(merger(user_repos))
+        merged_repos = merger(user_repos)
+        merged_repos = sum(merged_repos, [])
+        return sorted(merged_repos, key=lambda instance: instance['timestamp'])
 
 
     def create_repository(self, org, repo, name, pusher):
