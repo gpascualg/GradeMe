@@ -11,7 +11,7 @@ then
     while true; do
         read -p "Testet \"$VOLUME_NAME\" already exists, do you wish to re-create it? [y/n] " yn
         case $yn in
-            [Yy]* ) docker volume rm $VOLUME_NAME; break;;
+            [Yy]* ) if ! docker volume rm $VOLUME_NAME; then exit; fi; break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
         esac
