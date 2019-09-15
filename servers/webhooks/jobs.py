@@ -35,6 +35,8 @@ def process_job(meta, oauth_token):
         '-e', 'OAUTH_TOKEN=' + oauth_token,
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '--mount', 'type=tmpfs,destination=/instance',
+        '--mount', 'type=bind,source=/run/secrets/rabbit-user,target=/run/secrets/rabbit-user,readonly',
+        '--mount', 'type=bind,source=/run/secrets/rabbit-pass,target=/run/secrets/rabbit-pass,readonly',
         '--network', 'backend',
         '--rm',
         '--name', instance_name,
