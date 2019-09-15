@@ -4,4 +4,18 @@
 # Argument 2 should be TESTS organization
 # Argument 3 should be TESTS repository
 
-docker run -ti --rm --mount source=$1-$3,target=/tests alpine/git clone https://github.com/$2/$3 /tests/_
+VOLUME_NAME=$1-$3
+
+if docker volume inspect grademe_mongodb-data &>/dev/null
+then
+    while true; do
+        read -p "Testet \"$VOLUME_NAME\" already exists, do you wish to re-create it? [y/n] " yn
+        case $yn in
+            [Yy]* ) docker volume rm $VOLUME_NAME; break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+docker run -ti --rm --mount source=$VOLUME_NAME,target=/tests alpine/git clone https://github.com/$2/$3 /tests/_

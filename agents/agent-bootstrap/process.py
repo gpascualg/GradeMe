@@ -64,13 +64,18 @@ def continue_process(instance, data, rabbit_channel):
 
     # TODO(gpascualg): Add more options?
     agent_opts = []
-    if data.get('python-options'):
-        if data['python-options'].get('scriptify'):
+    if data.get('python'):
+        if data['python'].get('scriptify'):
             agent_opts.append('-s')
-        if data['python-options'].get('importable'):
+        if data['python'].get('importable'):
             agent_opts.append('-i')
 
+    if data.get('default'):
+        agent_opts.append('-d')
+
     volume_name = os.environ['GITHUB_ORGANIZATION'] + '-' + data['testset']
+
+    print('Proceeding to run {} with options: {}'.format(agent_name, ' '.join(agent_opts)))
 
     # Run detached
     docker_id = subprocess.check_output(['docker', 'run', 

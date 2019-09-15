@@ -9,7 +9,7 @@ scriptify=0
 importable=0
 default=0
 
-while getopts "h?vf:" opt; do
+while getopts "h?sid:" opt; do
     case "$opt" in
     s)  scriptify=1
         ;;
