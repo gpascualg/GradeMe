@@ -29,7 +29,7 @@ shift $((OPTIND-1))
 if [ $scriptify -eq 1 ]
 then
     echo "> Scriptifying notebooks"
-    python3 /opt/utils/scriptify.py
+    python3 /opt/base/utils/scriptify.py
 fi
 
 if [ $importable -eq 1 ]
