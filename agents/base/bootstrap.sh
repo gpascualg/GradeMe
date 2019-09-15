@@ -42,4 +42,4 @@ export PYTHONPATH=/opt/:$PYTHONPATH
 
 # Run
 echo "> Start tests"
-exec /tests/_/main --secret $1
+exec /tests/_/main --queue $1

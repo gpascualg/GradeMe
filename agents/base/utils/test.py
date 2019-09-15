@@ -14,13 +14,13 @@ from .privilegies import drop_privileges
 def send_end(client):
     client.end()
 
-def setup(host, secret):
+def setup(host, queue):
     # Results
     # TODO(gpascualg): Retry connection, it will probably fail at first
-    client = MessageSender('rabbit', secret)
+    client = MessageSender('rabbit', queue)
 
     # Logging
-    logger = logging.getLogger()
+    logger = logging.getLogger('grade-me')
     log_formatter = logging.Formatter("%(message)s")
     logger.setLevel(logging.DEBUG)
 
@@ -35,11 +35,11 @@ def setup(host, secret):
 
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--secret', required=True)
+    parser.add_argument('--queue', required=True)
     args = parser.parse_args()
 
     # Setup logger and client
-    logger, client = setup(args.host, args.secret)
+    logger, client = setup(args.host, args.queue)
 
     # Load tests
     test_loader = unittest.TestLoader()

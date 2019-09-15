@@ -54,13 +54,21 @@ def continue_process(instance, data, rabbit_channel):
             daily_usage
         )
 
-    # TODO: Make this configurable
+    # TODO(gpascualg): Make this configurable
     if data.get('language') in ('python3', 'telegram'):
         agent_name = 'agent-' + data['language']
     else:
         print('> Non-existing agent')
         update_instance(instance, 'non-existing-agent')
         return False
+
+    # TODO(gpascualg): Add more options?
+    agent_opts = []
+    if data.get('python-options'):
+        if data['python-options'].get('scriptify'):
+            agent_opts.append('-s')
+        if data['python-options'].get('importable'):
+            agent_opts.append('-i')
 
     volume_name = os.environ['GITHUB_ORGANIZATION'] + '-' + data['testset']
 
@@ -70,7 +78,7 @@ def continue_process(instance, data, rabbit_channel):
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
         '--network', 'results',
-        agent_name, rabbit_channel], stderr=subprocess.STDOUT)
+        agent_name, *agent_opts, rabbit_channel], stderr=subprocess.STDOUT)
     
     return docker_id.strip()
 

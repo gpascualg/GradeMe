@@ -10,6 +10,14 @@ from ..common.database import Database
 class MessageSender(object):
     __instance = {}
     
+    @staticmethod
+    def get(queue=None):
+        # This is not the most beautiful code out there
+        # If there is more than one instance running (or none), expect the unexpected
+        if queue is None:
+            queue = next(MessageSender.__instance.keys())
+        return MessageSender.__instance.get(queue)
+
     def __new__(cls, host, queue):
         if MessageSender.__instance.get(queue) is None:
             MessageSender.__instance[queue] = object.__new__(cls)
