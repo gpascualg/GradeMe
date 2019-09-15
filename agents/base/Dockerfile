@@ -22,7 +22,9 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /et
 
 VOLUME ["/instance"]
 
-RUN mkdir base
+RUN touch /run/secrets/rabbit-user && \
+	touch /run/secrets/rabbit-pass && \
+	mkdir base
 
 WORKDIR /opt
 COPY agents/base/bootstrap.sh /opt/
