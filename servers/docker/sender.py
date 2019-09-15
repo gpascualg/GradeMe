@@ -4,7 +4,6 @@ from threading import Thread
 from queue import Queue
 
 from .message_type import MessageType
-from ..common.database import Database
 
 
 class MessageSender(object):
@@ -25,14 +24,19 @@ class MessageSender(object):
         return MessageSender.__instance[queue]
 
     def __init__(self, host, queue):
-        credentials = Database().get_credentials(host)
+        # Save rabbit credentials
+        with open('/run/secrets/rabbit-user') as fp:
+            rabbit_username = fp.read().strip()
+        with open('/run/secrets/rabbit-pass') as fp:
+            rabbit_password = fp.read().strip()
+
+        credentials = pika.PlainCredentials(rabbit_username, rabbit_password)
         self.queue = queue
         self.msgs = Queue()
         self.thread = Thread(target=self.run, args=(credentials, host, queue))
         self.thread.start()
         
     def run(self, credentials, host, queue):
-        credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host, credentials=credentials)
         )

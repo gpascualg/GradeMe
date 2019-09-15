@@ -22,10 +22,13 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /et
 
 VOLUME ["/instance"]
 
+RUN mkdir base
+
 WORKDIR /opt
 COPY agents/base/bootstrap.sh /opt/
 COPY agents/base/default.py /opt/
-COPY agents/base/utils /opt/utils
-COPY servers/docker /opt/docker
+COPY agents/base/test.py /opt/base/
+COPY agents/base/utils /opt/base/utils
+COPY servers/docker /opt/base/docker
 ENTRYPOINT ["/opt/bootstrap.sh"]
 CMD [""]

@@ -3,7 +3,6 @@ import pika
 from queue import Queue
 
 from .message_type import MessageType
-from ..common.database import Database
 
 
 class MessageListener(object):
@@ -16,8 +15,12 @@ class MessageListener(object):
         return MessageListener.__instance[queue]
 
     def __init__(self, host, queue, messages=None):
-        credentials = Database().get_credentials(host)
-        credentials = pika.PlainCredentials(credentials['username'], credentials['password'])
+        with open('/run/secrets/rabbit-user') as fp:
+            rabbit_username = fp.read().strip()
+        with open('/run/secrets/rabbit-pass') as fp:
+            rabbit_password = fp.read().strip()
+
+        credentials = pika.PlainCredentials(rabbit_username, rabbit_password)
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host, credentials=credentials)
         )

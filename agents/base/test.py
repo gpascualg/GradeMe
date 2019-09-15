@@ -5,8 +5,8 @@ import atexit
 import os
 import tempfile
 
-from ..docker import MessageSender
-from .privilegies import drop_privileges
+from .docker import MessageSender
+from .utils.privilegies import drop_privileges
 
 
 def send_end(client):

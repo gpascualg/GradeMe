@@ -82,8 +82,10 @@ def continue_process(instance, data, rabbit_channel):
         '-d', '-t',
         '-v', '/instance:/instance',
         '--mount', 'source=' + volume_name + ',target=/tests,readonly',
+        '--mount', 'type=bind,source=/run/secrets/rabbit-user,target=/run/secrets/rabbit-user,readonly',
+        '--mount', 'type=bind,source=/run/secrets/rabbit-pass,target=/run/secrets/rabbit-pass,readonly',
         '--network', 'results',
-        agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.STDOUT)
+        agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.PIPE)
     
     return docker_id.strip()
 
@@ -91,7 +93,7 @@ def on_tick(docker_id):
     is_running = False
 
     try:
-        data = subprocess.check_output(['docker', 'inspect', docker_id], stderr=subprocess.STDOUT)
+        data = subprocess.check_output(['docker', 'inspect', docker_id], stderr=subprocess.PIPE)
         data = json.loads(data)
         is_running = data[0]['State']['Running']
     except:
@@ -99,7 +101,7 @@ def on_tick(docker_id):
 
     if not is_running:
         print('Docker not running anymore')
-        logs = subprocess.check_output(['docker', 'logs', docker_id], stderr=subprocess.STDOUT)
+        logs = subprocess.check_output(['docker', 'logs', docker_id], stderr=subprocess.PIPE)
         print(logs)
     
     return is_running
@@ -174,7 +176,7 @@ try:
 
             exitcode = 1
             try:
-                inspect = subprocess.check_output(['docker', 'inspect', docker_id_or_false], stderr=subprocess.STDOUT)
+                inspect = subprocess.check_output(['docker', 'inspect', docker_id_or_false], stderr=subprocess.PIPE)
                 inspect = json.loads(inspect)
                 exitcode = inspect[0]['State']['ExitCode']
             except:
