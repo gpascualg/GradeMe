@@ -12,6 +12,7 @@ import argparse
 import datetime
 import random
 import pymongo
+import time
 
 from queue import Queue
 from distutils.dir_util import copy_tree
@@ -90,11 +91,13 @@ def continue_process(instance, data, rabbit_channel):
 
 def on_tick(docker_id):
     is_running = False
+    exit_code = -1
 
     try:
         data = subprocess.check_output(['docker', 'inspect', docker_id], stderr=subprocess.PIPE)
         data = json.loads(data)
         is_running = data[0]['State']['Running']
+        exit_code = data[0]['State']['ExitCode']
     except:
         pass
 
@@ -103,7 +106,7 @@ def on_tick(docker_id):
         logs = subprocess.check_output(['docker', 'logs', docker_id], stderr=subprocess.PIPE)
         print(logs)
     
-    return is_running
+    return is_running, exit_code
 
 
 def main(instance, organization_id, rabbit_channel):
@@ -171,17 +174,17 @@ try:
         if docker_id_or_false:
             # Block until we have all results
             results = MessageListener('rabbit', os.environ['GITHUB_COMMIT'])
-            results.run(lambda: on_tick(docker_id_or_false))
+            results.run(lambda: on_tick(docker_id_or_false)[0])
 
-            exitcode = 1
-            try:
-                inspect = subprocess.check_output(['docker', 'inspect', docker_id_or_false], stderr=subprocess.PIPE)
-                inspect = json.loads(inspect)
-                exitcode = inspect[0]['State']['ExitCode']
-            except:
-                pass
+            # Maybe it has not yet ended, gracefully wait
+            exit_code = -1
+            is_running = True
+            while is_running:
+                time.sleep(1)
+                is_running, exit_code = on_tick(docker_id_or_false)
 
-            update_instance(instance, 'done' if exitcode == 0 else 'execution-error', results.json())
+            # Done, update info and rm
+            update_instance(instance, 'done' if exit_code == 0 else 'execution-error', results.json())
             subprocess.call(['docker', 'rm', docker_id_or_false])
 
 except pymongo.errors.ServerSelectionTimeoutError:
