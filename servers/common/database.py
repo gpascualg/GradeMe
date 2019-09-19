@@ -269,7 +269,8 @@ class Database(object):
             {
                 '_id': 1,
                 'name': 1,
-                'instances': 1
+                'instances': 1,
+                'access_rights': 1
             }
         )
 
@@ -278,9 +279,21 @@ class Database(object):
         # Merge into single objects
         def parse_instances(user_repos):
             for repo in user_repos:
+                # Get name
                 repo['org_name'] = self.get_organization_name(repo['_id']['org'])
+
+                # Sort and filter instances
                 repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'])
                 repo['instances'] = [{k: v for k, v in ins.items() if k != 'log'} for ins in repo['instances']]
+
+                # Get usernames
+                for ar in repo['access_rights']:
+                    user = self.user(ar['id'])
+                    if user is not None:
+                        ar['name'] = user['name']
+                    else:
+                        ar['name'] = ar['id']
+
                 yield repo
 
         return list(parse_instances(user_repos))

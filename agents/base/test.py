@@ -12,7 +12,7 @@ from .utils.privilegies import drop_privileges
 def send_end(client):
     client.end()
 
-def setup(host, queue):
+def setup(queue):
     # Results
     # TODO(gpascualg): Retry connection, it will probably fail at first
     client = MessageSender('rabbit', queue)
@@ -37,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     # Setup logger and client
-    setup(args.host, args.queue)
+    setup(args.queue)
 
     # Load tests
     test_loader = unittest.TestLoader()
@@ -50,6 +50,9 @@ def main():
     # Run tests
     with tempfile.TemporaryFile('w') as fp:
         unittest.TextTestRunner(stream=fp, verbosity=0).run(testsuite)
+
+    # Make sure we close connection
+    client.end()
 
 if __name__ == '__main__':
     main()

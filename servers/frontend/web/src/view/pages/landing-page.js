@@ -1,29 +1,31 @@
 import { Col, Grid } from 'construct-ui';
 
 function color_from_status(status) {
-    switch (status) {
-        // Fatal cases
-        case 'checksum-mismatch':
-            return 'red';
-        case 'execution-error':
-            return 'red';
-        case 'missing-yml':
-            return 'red';
-        case 'unkown-error':
-            return 'red';
+    return 'color-' + ((status) => {
+        switch (status) {
+            // Fatal cases
+            case 'checksum-mismatch':
+                return 'red';
+            case 'execution-error':
+                return 'red';
+            case 'missing-yml':
+                return 'red';
+            case 'unkown-error':
+                return 'red';
 
-        // Skipped cases
-        case 'branch-mismatch':
-            return 'orange';
+            // Skipped cases
+            case 'branch-mismatch':
+                return 'orange';
 
-        // Success
-        case 'done':
-            return 'green';
+            // Success
+            case 'done':
+                return 'green';
 
-        // Unkown
-        default:
-            return 'red';
-    }
+            // Unkown
+            default:
+                return 'red';
+        }
+    })(status);
 }
 
 function printable_date(timestamp) {
@@ -31,12 +33,34 @@ function printable_date(timestamp) {
     
     var hours = "0" + date.getHours();
     var minutes = "0" + date.getMinutes();
-    var day = "0" + date.getDay();
+    var day = "0" + date.getDate();
     var month = "0" + date.getMonth();
     var year = date.getFullYear();
 
     return day.substr(-2) + "/" + month.substr(-2) + "/" + year + " " +
          hours.substr(-2) + ":" + minutes.substr(-2);
+}
+
+function toggle(e, repo)
+{
+    if (repo.height == '0') {
+        repo.height = '1000px';
+    }
+    else {
+        repo.height = '0';
+    }
+}
+
+function printable_users(access_rights) {
+    var users = []
+    for (var i = 0; i < access_rights.length; ++i)
+    {
+        if (access_rights[i]['permission'] == 'member') {
+            users.push(access_rights[i]['name']);
+        }
+    }
+
+    return users.join(', ');
 }
 
 export default function() {
@@ -52,8 +76,13 @@ export default function() {
                 <Grid key='grid' justify="center">
                     { repos.map((repo) => {
                         return <Col key={ repo.org_name + '/' + repo.name } span={ 12 }>
-                            <div className={ 'color-repo' }>{ repo.org_name }/{ repo.name }</div>
-                            <Grid key={ repo.org_name + '/' + repo.name + '/instances' }>
+                            <div className={ 'color-repo' } onclick={ (e) => toggle(e, repo) }>
+                                { repo.org_name }/{ repo.name }
+                                <div className={ 'timestamp' }>
+                                    [{ printable_users(repo.access_rights) }]
+                                </div>
+                            </div>
+                            <Grid key={ repo.org_name + '/' + repo.name + '/instances' } style={ { 'max-height': repo.height || '1000px' } }>
                                 {
                                     repo.instances.map((ist) => {
                                         return <Col key={ ist.hash } span={ 12 }>

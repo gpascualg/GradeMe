@@ -48,13 +48,21 @@ class MessageSender(object):
             try:
                 try:
                     msg = self.msgs.get(False)
-                    self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
+                    if self.msg is None:
+                        print('Breaking')
+                        self.connection.close()
+                        break
+                    else:
+                        self.channel.basic_publish(exchange='', routing_key=self.queue, body=msg)
                 except:
                     pass
 
                 self.connection.sleep(0.1)
             except:
-                MessageSender.__instance[self.queue] = None
+                break
+                pass
+
+        MessageSender.__instance[self.queue] = None        
 
     def import_error(self, **data):
         self.send(MessageType.IMPORT_ERROR, data)
@@ -64,8 +72,8 @@ class MessageSender(object):
 
     def end(self):
         self.send(MessageType.TESTS_DONE, {})
-        self.connection.close()
-        MessageSender.__instance[self.queue] = None
+        self.msgs.put(None)
+        self.thread.join()
     
     def send(self, type, data):
         msg = '{} {}'.format(int(type.value), json.dumps(data))

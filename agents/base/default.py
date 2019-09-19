@@ -1,4 +1,4 @@
-from utils.test import main
+from base.test import main
 
 if __name__ == '__main__':
     main()

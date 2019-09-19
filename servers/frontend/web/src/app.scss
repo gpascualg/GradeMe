@@ -26,16 +26,14 @@ h1 {
 
 @import '../node_modules/construct-ui/lib/index.css';
 
-.repo-grid
-{
-	padding: 0 0 0 15px;
-}
-
 .cui-col-12 > div {
 	padding: 10px;
 	border: 1px solid black;
 	transition: 0.3s;
 	cursor: pointer;
+	transition: max-height 0.15s ease-out;
+	max-height: 1000px;
+	overflow: hidden;
 }
 
 .timestamp {
