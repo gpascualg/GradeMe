@@ -37,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     # Setup logger and client
-    setup(args.queue)
+    _, client = setup(args.queue)
 
     # Load tests
     test_loader = unittest.TestLoader()
