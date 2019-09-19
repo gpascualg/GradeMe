@@ -14,7 +14,7 @@ class MessageSender(object):
         # This is not the most beautiful code out there
         # If there is more than one instance running (or none), expect the unexpected
         if queue is None:
-            queue = next(MessageSender.__instance.keys())
+            queue = next(iter(MessageSender.__instance.keys()))
         return MessageSender.__instance.get(queue)
 
     def __new__(cls, host, queue):
