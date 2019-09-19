@@ -48,8 +48,7 @@ class MessageSender(object):
             try:
                 try:
                     msg = self.msgs.get(False)
-                    if self.msg is None:
-                        print('Breaking')
+                    if msg is None:
                         self.connection.close()
                         break
                     else:

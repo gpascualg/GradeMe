@@ -22,7 +22,7 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /et
 
 VOLUME ["/instance"]
 
-RUN mkdir base
+RUN mkdir base && touch base/__init__.py
 
 WORKDIR /opt
 COPY agents/base/bootstrap.sh /opt/
