@@ -133,3 +133,6 @@ def main():
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)
     thread.join()
     
+    # TODO(gpascualg): Cleanup listener
+    # results.cleanup()
+    

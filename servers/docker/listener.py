@@ -52,7 +52,6 @@ class MessageListener(object):
                     self.channel.stop_consuming()
         
         self.connection.close()
-        MessageListener.__instance[self.queue] = None
 
     def get(self):
         messages = []
@@ -65,3 +64,6 @@ class MessageListener(object):
 
     def json(self):
         return [data for _, data in self.get()]
+
+    def cleanup(self):
+        MessageListener.__instance[self.queue] = None
