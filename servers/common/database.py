@@ -283,7 +283,7 @@ class Database(object):
                 repo['org_name'] = self.get_organization_name(repo['_id']['org'])
 
                 # Sort and filter instances
-                repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'])
+                repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'], reverse=True)
                 repo['instances'] = [{k: v for k, v in ins.items() if k != 'log'} for ins in repo['instances']]
 
                 # Get usernames
