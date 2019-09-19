@@ -308,7 +308,7 @@ class Database(object):
                     else:
                         ar['name'] = ar['id']
 
-                if not repo['_id']['org'] in (org['id'] for or in orgs_where_admin):
+                if repo['_id']['org'] not in (org['id'] for org in orgs_where_admin):
                     filter_results(repo['results'])
 
                 yield repo
