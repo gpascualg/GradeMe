@@ -37,8 +37,9 @@ then
     export PYTHONPATH=/instance/code:$PYTHONPATH
 fi
 
-# Make sure /tests are ROOT only
-chmod 0700 /tests
+# Make sure /tests and secrets are readable by ROOT only
+chmod -R 0400 /tests
+chmod -R 0400 /run/secrets
 
 # Add utils & docker
 export PYTHONPATH=/opt/:$PYTHONPATH
