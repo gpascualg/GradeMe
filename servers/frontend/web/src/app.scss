@@ -26,11 +26,20 @@ h1 {
 
 @import '../node_modules/construct-ui/lib/index.css';
 
+.repo-grid
+{
+	padding: 0 0 0 15px;
+}
+
 .cui-col-12 > div {
 	padding: 10px;
 	border: 1px solid black;
 	transition: 0.3s;
 	cursor: pointer;
+}
+
+.timestamp {
+	float: right;
 }
 
 .color-red {
@@ -58,4 +67,9 @@ h1 {
 	&:hover {
 		background-color: $orange700;
 	}
+}
+
+.color-repo {
+	background-color: #667fbb;
+	color: $grey50;
 }
