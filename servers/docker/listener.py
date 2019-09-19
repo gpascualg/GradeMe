@@ -1,6 +1,6 @@
 import pika
-
-from queue import Queue
+import json
+from queue import Queue, Empty
 
 from .message_type import MessageType
 
@@ -37,7 +37,8 @@ class MessageListener(object):
             if msgtype == MessageType.TESTS_DONE:
                 self.channel.stop_consuming()
             else:
-                self.messages.put((msgtype, msg[1]))
+                data = json.loads(msg[1])
+                self.messages.put((msgtype, data))
         except:
             self.channel.stop_consuming()
             
@@ -58,9 +59,9 @@ class MessageListener(object):
         while True:
             try:
                 messages.append(self.messages.get(False))
-            except:
+            except Empty as e:
                 break
         return messages
 
     def json(self):
-        return [{"type": type, "data": data} for type, data in self.get()]
+        return [data for _, data in self.get()]
