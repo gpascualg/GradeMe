@@ -276,19 +276,14 @@ class Database(object):
         # TODO(gpascualg): This could be done all within mongo by "aggrate $unwind"
 
         # Merge into single objects
-        def merger(user_repos):
+        def parse_instances(user_repos):
             for repo in user_repos:
-                org_name = self.get_organization_name(repo['_id']['org'])
-                merged = itertools.product([repo['_id']], repo['instances'])
-                merged = [{'repo-name': repo['name'], 'org-name': org_name, **x, **y} for x, y in merged]
-                # TODO(gpascualg): Maybe we do need logs somewhere?
-                merged = [{k: v for k, v in instance.items() if k != 'log'} for instance in merged]
-                yield merged
+                repo['org_name'] = self.get_organization_name(repo['_id']['org'])
+                repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'])
+                repo['instances'] = [{k: v for k, v in ins.items() if k != 'log'} for ins in repo['instances']]
+                yield repo
 
-        merged_repos = merger(user_repos)
-        merged_repos = sum(merged_repos, [])
-        return sorted(merged_repos, key=lambda instance: instance['timestamp'])
-
+        return list(parse_instances(user_repos))
 
     def create_repository(self, org, repo, name, pusher):
         # Search if repo has any team

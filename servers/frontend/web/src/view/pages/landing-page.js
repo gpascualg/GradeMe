@@ -1,19 +1,28 @@
 import { Col, Grid } from 'construct-ui';
 
 export default function() {
-    var instances = [];
+    var repos = [];
 
     return {
         oninit(vnode) {
-            instances = vnode.attrs.instances;
+            repos = vnode.attrs.repos;
         },
         view() {
             return [
                 <h1 key='h1'>Tests: </h1>,
                 <Grid key='grid' justify="center">
-                    { instances.map((ist) => {
-                        return <Col key={ ist.id } span={ 12 }>
-                            <div className={ 'color-' + ist.color }>{ ist.name }</div>
+                    { repos.map((repo) => {
+                        return <Col key={ repo.org_name + '/' + repo.name } span={ 12 }>
+                            <div className={ 'color-gray' }>{ repo.org_name }/{ repo.name }</div>
+                            <Grid key={ repo.org_name + '/' + repo.name + '/instances' }>
+                                {
+                                    repo.instances.map((ist) => {
+                                        return <Col key={ ist.hash } span={ 10 }>
+                                            <div className={ 'color-green' }>{ ist.title } ({ ist.status })</div>
+                                        </Col>
+                                    })
+                                }
+                            </Grid>
                         </Col>;
                     }) }
                 </Grid>,

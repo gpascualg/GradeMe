@@ -125,7 +125,7 @@ const Routes = {
                         console.log(instances);
                         resolve(() => {
                             return {
-                                'instances': instances
+                                'repos': instances
                             }
                         });
                     });
