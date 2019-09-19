@@ -94,7 +94,7 @@ def test_suite(section=''):
                     })
 
             # Section done, send results now
-            sender.send_result({
+            sender.send_result(**{
                 'name': str(cls),
                 'header': section,
                 'tests': as_json,
