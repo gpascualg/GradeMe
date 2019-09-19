@@ -31,7 +31,7 @@ class MessageListener(object):
 
     def callback(self, ch, method, properties, body):
         try:
-            msg = body.split(max=1)
+            msg = body.split(maxsplit=1)
             msgtype = MessageType(int(msg[0]))
 
             if msgtype == MessageType.TESTS_DONE:
@@ -39,7 +39,8 @@ class MessageListener(object):
             else:
                 data = json.loads(msg[1])
                 self.messages.put((msgtype, data))
-        except:
+        except Exception as e:
+            print("Exception {}".format(repr(e)))
             self.channel.stop_consuming()
             
     def run(self, on_tick=None):

@@ -276,6 +276,20 @@ class Database(object):
 
         # TODO(gpascualg): This could be done all within mongo by "aggrate $unwind"
 
+        # Filter results if not admin
+        def filter_results(results):
+            for section in results:
+                del section['score']['private'] # No private
+
+                public_tests = [test for test in section['tests'] if test['public']]
+
+                for test in public_tests:
+                    if not test['is_score_public']:
+                        del test['score']
+                        del test['max_score'] # Should we make it public?
+                    
+                section['tests'] = public_tests
+
         # Merge into single objects
         def parse_instances(user_repos):
             for repo in user_repos:
@@ -293,6 +307,9 @@ class Database(object):
                         ar['name'] = user['name']
                     else:
                         ar['name'] = ar['id']
+
+                if not repo['_id']['org'] in (org['id'] for or in orgs_where_admin):
+                    filter_results(repo['results'])
 
                 yield repo
 

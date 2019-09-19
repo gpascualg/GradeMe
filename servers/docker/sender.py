@@ -59,7 +59,6 @@ class MessageSender(object):
                 self.connection.sleep(0.1)
             except:
                 break
-                pass
 
         MessageSender.__instance[self.queue] = None        
 
