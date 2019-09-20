@@ -1,4 +1,5 @@
 import { Col, Grid } from 'construct-ui';
+import { route } from '../components/helper';
 
 function color_from_status(status) {
     return 'color-' + ((status) => {
@@ -63,6 +64,10 @@ function printable_users(access_rights) {
     return users.join(', ');
 }
 
+function route(e, repo, ist) {
+    m.route.set('/results/' + repo._id.org + '/' + repo._id.repo + '/' + ist.hash);
+}
+
 export default function() {
     var repos = [];
 
@@ -86,7 +91,7 @@ export default function() {
                                 {
                                     repo.instances.map((ist) => {
                                         return <Col key={ ist.hash } span={ 12 }>
-                                            <div className={ color_from_status(ist.status) }>
+                                            <div className={ color_from_status(ist.status) } onclick={ (e) => route(e, repo, ist) }>
                                                 { ist.title }
                                                 <div className={ 'timestamp' }>
                                                     { printable_date(ist.timestamp) }

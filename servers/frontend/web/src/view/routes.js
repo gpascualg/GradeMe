@@ -7,6 +7,7 @@ import MaintenancePage from './components/maintenance-layout/index';
 // Main pages
 import IndexPage from './pages/landing-page';
 import LoginPage from './pages/login-page';
+import ResultsPage from './pages/results-page'
 
 // Websockets
 import io from 'socket.io-client';
@@ -115,6 +116,25 @@ const Routes = {
             return m(PageLayout, m(LoginPage));
         },
     },
+    '/results/:org/:repo/:hash' : lazyLoad(ResultsPage, (resolve, reject, db) => {
+        onceSocketReady.then(([socket, user_information]) => {
+            if (user_information != null) {
+                socket.once('instance-result', (instance) => {
+                    console.log(instance);
+                    resolve(() => {
+                        return {
+                            'instance': instance
+                        }
+                    });
+                });
+
+                socket.emit('fetch-instance-result');
+            } 
+            else {
+                reject(LoginPage);
+            }
+        });
+    }),
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
         onceSocketReady.then(([socket, user_information]) => {
             if (user_information != null) {

@@ -274,46 +274,46 @@ class Database(object):
             }
         )
 
-        # TODO(gpascualg): This could be done all within mongo by "aggrate $unwind"
+        return list(parse_instances(user_repos, filter_out=('log', 'results')))
 
-        # Filter results if not admin
-        def filter_results(results):
-            for section in results:
-                del section['score']['private'] # No private
+    def instance_result(self, user, org, repo, hash):
+        orgs_where_admin = self.users.find_one(
+            {'_id' : user, 'orgs.admin' : True},
+            {'orgs.$' : 1}
+        )
+        orgs_where_admin = orgs_where_admin or {'orgs': []}
 
-                public_tests = [test for test in section['tests'] if test['public']]
+        instance = self.repos.find_one(
+            {
+                '$and' : 
+                [
+                    {
+                        '$or': 
+                        [
+                            { 'access_rights.id': user },
+                            *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
+                        ]
+                    },
+                    {
+                        '_id.org': org,
+                        '_id.repo': repo,
+                        'instance.hash' : hash
+                    }
+                ]
+            },
+            {
+                '_id': 1,
+                'name': 1,
+                'instances.$': 1,
+                'access_rights': 1
+            }
+        )
 
-                for test in public_tests:
-                    if not test['is_score_public']:
-                        del test['score']
-                        del test['max_score'] # Should we make it public?
-                    
-                section['tests'] = public_tests
+        if instance:
+            instance = next(parse_instances([instance], filter_out=('log')))
+            filter_results(instance['instances'][0]['results'])
 
-        # Merge into single objects
-        def parse_instances(user_repos):
-            for repo in user_repos:
-                # Get name
-                repo['org_name'] = self.get_organization_name(repo['_id']['org'])
-
-                # Sort and filter instances
-                repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'], reverse=True)
-                repo['instances'] = [{k: v for k, v in ins.items() if k != 'log'} for ins in repo['instances']]
-
-                # Get usernames
-                for ar in repo['access_rights']:
-                    user = self.user(ar['id'])
-                    if user is not None:
-                        ar['name'] = user['name']
-                    else:
-                        ar['name'] = ar['id']
-
-                if repo['_id']['org'] not in (org['id'] for org in orgs_where_admin['orgs']):
-                    filter_results(repo['results'])
-
-                yield repo
-
-        return list(parse_instances(user_repos))
+        return instance
 
     def create_repository(self, org, repo, name, pusher):
         # Search if repo has any team
@@ -488,3 +488,41 @@ class Database(object):
                 return wrap(fun)
 
         return Wrapper()
+
+
+# Merge into single objects
+def parse_instances(user_repos, filter_out=('log',)):
+    for repo in user_repos:
+        # Get name
+        repo['org_name'] = self.get_organization_name(repo['_id']['org'])
+
+        # Sort and filter instances
+        repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'], reverse=True)
+        repo['instances'] = [{k: v for k, v in ins.items() if k not in filter_out} for ins in repo['instances']]
+
+        # Get usernames
+        for ar in repo['access_rights']:
+            user = self.user(ar['id'])
+            if user is not None:
+                ar['name'] = user['name']
+            else:
+                ar['name'] = ar['id']
+
+        yield repo
+
+# Filter results if not admin
+def filter_results(results):
+    for section in results:
+        del section['score']['private'] # No private
+
+        public_tests = [test for test in section['tests'] if test['public']]
+
+        for test in public_tests:
+            if not test['is_score_public']:
+                del test['score']
+                del test['max_score'] # Should we make it public?
+
+            if test['hide_details']:
+                del test['details']
+            
+        section['tests'] = public_tests

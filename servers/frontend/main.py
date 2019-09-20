@@ -91,6 +91,14 @@ def setup_app_routes(app, github, socketio, debug):
         else:
             emit('user-instances', Database().user_instances(g.user['_id']))
 
+    @socketio.on('fetch-instance-result')
+    def fetch_instances(request):
+        before_request()
+        if g.user is None:
+            emit('instance-result', None)
+        else:
+            emit('instance-result', Database().instance_result(
+                g.user['_id'], request['org'], request['repo'], request['hash']))
 
 def listener(messages):
     results = MessageListener('rabbit', 'jobs', messages)
