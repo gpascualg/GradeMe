@@ -269,10 +269,12 @@ class Database(object):
             {
                 '_id': 1,
                 'name': 1,
-                'instances': 1,
+                'instances': {'$slice': 10}, # TODO(gpascualg): Make this limit configurable
                 'access_rights': 1
             }
         )
+        user_repos = user_repos.sort([('instances.0.timestamp', -1)]) # Sort by newest repos
+        user_repos = user_repos.limit(10) # Up to 10 only
 
         return list(parse_instances(user, user_repos, filter_out=('log', 'results')))
 
@@ -411,13 +413,16 @@ class Database(object):
                 {
                     'instances': 
                     {
-                        'hash': hash,
-                        'branch': branch,
-                        'title': title,
-                        'log': None,
-                        'results': [],
-                        'status': 'pending',
-                        'timestamp': int(datetime.timestamp(datetime.now()))
+                        '$each': [{
+                            'hash': hash,
+                            'branch': branch,
+                            'title': title,
+                            'log': None,
+                            'results': [],
+                            'status': 'pending',
+                            'timestamp': int(datetime.timestamp(datetime.now()))
+                        }],
+                        '$sort': {'timestamp': -1}
                     }
                 }
             }
