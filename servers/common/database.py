@@ -297,7 +297,7 @@ class Database(object):
                     {
                         '_id.org': org,
                         '_id.repo': repo,
-                        'instance.hash' : hash
+                        'instances.hash' : hash
                     }
                 ]
             },
@@ -494,7 +494,7 @@ class Database(object):
 def parse_instances(user_repos, filter_out=('log',)):
     for repo in user_repos:
         # Get name
-        repo['org_name'] = self.get_organization_name(repo['_id']['org'])
+        repo['org_name'] = Database().get_organization_name(repo['_id']['org'])
 
         # Sort and filter instances
         repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'], reverse=True)
@@ -502,7 +502,7 @@ def parse_instances(user_repos, filter_out=('log',)):
 
         # Get usernames
         for ar in repo['access_rights']:
-            user = self.user(ar['id'])
+            user = Database().user(ar['id'])
             if user is not None:
                 ar['name'] = user['name']
             else:
