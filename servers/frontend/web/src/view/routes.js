@@ -119,11 +119,11 @@ const Routes = {
     '/results/:org/:repo/:hash' : lazyLoad(ResultsPage, (resolve, reject, db, params) => {
         onceSocketReady.then(([socket, user_information]) => {
             if (user_information != null) {
-                socket.once('instance-result', (instance) => {
-                    console.log(instance);
+                socket.once('instance-result', (repo) => {
+                    console.log(repo);
                     resolve(() => {
                         return {
-                            'instance': instance
+                            'repo': repo
                         }
                     });
                 });
