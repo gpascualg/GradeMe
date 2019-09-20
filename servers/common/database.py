@@ -274,7 +274,7 @@ class Database(object):
             }
         )
 
-        return list(parse_instances(user_repos, filter_out=('log', 'results')))
+        return list(parse_instances(user, user_repos, filter_out=('log', 'results')))
 
     def instance_result(self, user, org, repo, hash):
         orgs_where_admin = self.users.find_one(
@@ -310,7 +310,7 @@ class Database(object):
         )
 
         if instance:
-            instance = next(parse_instances([instance], filter_out=('log')))
+            instance = next(parse_instances(user, [instance], filter_out=('log')))
 
             if user not in self.get_organization_admins(org):
                 filter_results(instance['instances'][0]['results'])
@@ -493,13 +493,13 @@ class Database(object):
 
 
 # Merge into single objects
-def parse_instances(user_repos, filter_out=('log',)):
+def parse_instances(user, user_repos, filter_out=('log',)):
     for repo in user_repos:
         # Get name
         repo['org_name'] = Database().get_organization_name(repo['_id']['org'])
 
         # Set scores
-        for instance in instance['instances']:
+        for instance in repo['instances']:
             is_admin = user in Database().get_organization_admins(repo['_id']['org'])
             score, total = calc_score(instance['results'], is_admin)
             instance['score'] = score

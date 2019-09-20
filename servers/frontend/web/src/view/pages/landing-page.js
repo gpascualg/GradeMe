@@ -95,7 +95,7 @@ export default function() {
                                         return <Col key={ ist.hash } span={ 12 }>
                                             <div className={ color_from_status(ist.status) } onclick={ (e) => setroute(e, repo, ist) }>
                                                 { !is_failed(ist.status) && 
-                                                    <span className={ 'bold' }>[{ ist.score }/{ ist.total }]</span>
+                                                    <span className={ 'bold' }>[{ ist.score }/{ ist.total }] </span>
                                                 }
 
                                                 { ist.title }
@@ -103,7 +103,7 @@ export default function() {
                                                     { printable_date(ist.timestamp) }
                                                 </div>
                                                 { is_failed(ist.status) &&
-                                                    <div className='pad-left'>Failure reason: { ist.status }</div>
+                                                    <div className='pad-left'>Failure reason: <span className={ 'capitalize' }>{ ist.status.split('-').join(' ') }</span></div>
                                                 }
                                             </div>
                                         </Col>
