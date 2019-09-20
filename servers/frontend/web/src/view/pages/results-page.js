@@ -125,6 +125,7 @@ export default function() {
                     </div>
                 </h3>,
                 <Grid key='grid' justify="center">
+                    { instance.results.length == 0 && <Col key={ section.name } span={ 12 }>There are no tests</Col> }
                     { instance.results.map((section) => {
                         return <Col key={ section.name } span={ 12 }>
                             <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>

@@ -6,15 +6,13 @@ function color_from_status(status) {
         switch (status) {
             // Fatal cases
             case 'checksum-mismatch':
-                return 'red';
             case 'execution-error':
-                return 'red';
             case 'missing-yml':
-                return 'red';
             case 'unkown-error':
                 return 'red';
 
             // Skipped cases
+            case 'pending':
             case 'branch-mismatch':
                 return 'orange';
 
@@ -97,7 +95,7 @@ export default function() {
                                         return <Col key={ ist.hash } span={ 12 }>
                                             <div className={ color_from_status(ist.status) } onclick={ (e) => setroute(e, repo, ist) }>
                                                 { !is_failed(ist.status) && 
-                                                    [x/y] 
+                                                    <span className={ 'bold' }>[x/y]</span>
                                                 }
 
                                                 { ist.title }
