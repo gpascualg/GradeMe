@@ -86,7 +86,7 @@ function printable_score(score, def, b, a) {
         return def;
     }
 
-    var score_str = "Tests: " + score.absolute.correct + "/" + score.absolute.total + " · Score :" +
+    var score_str = "Tests " + score.absolute.correct + "/" + score.absolute.total + " · Score " +
         score.numeric.score + "/" + score.numeric.total;
         
     if (score.numeric['extra-total'] > 0)
@@ -117,17 +117,17 @@ export default function() {
         view() {
             return [
                 <h1 key='h1'>{ repo.org_name + '/' + repo.name }</h1>,
-                <h2 key='h2' className={ color_from_status(instance.status) }>{ instance.title }</h2>,
+                <h2 key='h2'>{ instance.title }</h2>,
                 <h3 key='h3'>
                     [{ printable_users(repo.access_rights) }]
                     <div className={ 'timestamp' }>
-                        { printable_date(ist.timestamp) }
+                        { printable_date(instance.timestamp) }
                     </div>
                 </h3>,
                 <Grid key='grid' justify="center">
                     { instance.results.map((section) => {
                         return <Col key={ section.name } span={ 12 }>
-                            <div className={ 'color-section' } onclick={ (e) => toggle(e, section) }>
+                            <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
                                 { section.header }
                                 <div className={ 'timestamp' }>
                                     { printable_score(section.score.public, "<hidden>", "[", "]") }
@@ -136,20 +136,22 @@ export default function() {
                                     { printable_score(section.score.private, "", " · [", "]") }
                                 </div>
                             </div>
-                            <Grid key={ section.name + '/tests' } style={ { 'max-height': section.height || '1000px' } }>
+                            <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
                                 {
                                     section.tests.map((test, i) => {
                                         return <Col key={ section.name + '/tests/' + i } span={ 12 }>
                                             <div className={ color_from_result(test.score, test.max_score) + ' test-header' }>
-                                                <div className={ 'test-name' }>{ test.name }</div>
+                                                <span className={ 'test-name' }>{ test.name }</span>
                                                 <div className={ 'timestamp' }>
                                                     { test_score(test.score, test.max_score) }
                                                 </div>
                                             </div>
-                                            <div className={ 'test-desc' }>{ test.desc }</div>
-                                            <div className={ 'test-details' }>{ test.details }</div>
-                                            <div className={ 'test-failure' }>{ test.failure_reason }</div>
-                                            <div className={ 'test-hint' }>{ test.hint }</div>
+                                            <div className={ 'inner-test' }>
+                                                <div className={ 'test-desc' }>{ test.desc }</div>
+                                                <div className={ 'test-details' }>{ test.details }</div>
+                                                <div className={ 'test-failure' }>{ test.failure_reason }</div>
+                                                <div className={ 'test-hint' }>{ test.hint }</div>
+                                            </div>
                                         </Col>
                                     })
                                 }

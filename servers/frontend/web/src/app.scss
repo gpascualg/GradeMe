@@ -10,6 +10,10 @@ body {
     overflow-y: scroll;
 }
 
+.container {
+	padding-bottom: 100px;
+}
+
 a {
 	text-decoration: none !important;
 	color: #5c5edc;
@@ -22,6 +26,14 @@ a:hover {
 
 h1 {
 	color: $grey100;
+}
+
+h2 {
+	color: $grey200;
+}
+
+h3 {
+	color: $grey300;
 }
 
 @import '../node_modules/construct-ui/lib/index.css';
@@ -70,4 +82,24 @@ h1 {
 .color-repo {
 	background-color: #667fbb;
 	color: $grey50;
+}
+
+.section-header {
+	background-color: #667fbb;
+    font-weight: bold;
+    font-size: large;
+}
+
+.tests-section {
+	padding: 0;
+	max-height: 1000px;
+}
+
+.tests-section > .cui-col-12 {
+	border: 1px solid black;
+    box-shadow: inset 0px 0px 5px 1px rgba(0,0,0,0.75);
+}
+
+.inner-test {
+	padding-left: 20px;
 }
