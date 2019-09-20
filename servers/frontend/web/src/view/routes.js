@@ -131,7 +131,7 @@ const Routes = {
                 socket.emit('fetch-instance-result', {
                     'org': parseInt(params.org), 
                     'repo': parseInt(params.repo), 
-                    'hash': parseInt(params.hash)
+                    'hash': params.hash
                 });
             } 
             else {
