@@ -29,6 +29,10 @@ function color_from_status(status) {
     })(status);
 }
 
+function is_failed(status) {
+    return color_from_status(status) != 'color-green';
+}
+
 function printable_date(timestamp) {
     var date = new Date(timestamp * 1000);
     
@@ -92,10 +96,17 @@ export default function() {
                                     repo.instances.map((ist) => {
                                         return <Col key={ ist.hash } span={ 12 }>
                                             <div className={ color_from_status(ist.status) } onclick={ (e) => setroute(e, repo, ist) }>
+                                                { !is_failed(ist.status) && 
+                                                    [x/y] 
+                                                }
+
                                                 { ist.title }
                                                 <div className={ 'timestamp' }>
                                                     { printable_date(ist.timestamp) }
                                                 </div>
+                                                { is_failed(ist.status) &&
+                                                    <div className='pad-left'>Failure reason: { ist.status }</div>
+                                                }
                                             </div>
                                         </Col>
                                     })
