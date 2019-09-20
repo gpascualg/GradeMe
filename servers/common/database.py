@@ -311,7 +311,9 @@ class Database(object):
 
         if instance:
             instance = next(parse_instances([instance], filter_out=('log')))
-            filter_results(instance['instances'][0]['results'])
+
+            if user not in self.get_organization_admins(org):
+                filter_results(instance['instances'][0]['results'])
 
         return instance
 
@@ -496,6 +498,13 @@ def parse_instances(user_repos, filter_out=('log',)):
         # Get name
         repo['org_name'] = Database().get_organization_name(repo['_id']['org'])
 
+        # Set scores
+        for instance in instance['instances']:
+            is_admin = user in Database().get_organization_admins(repo['_id']['org'])
+            score, total = calc_score(instance['results'], is_admin)
+            instance['score'] = score
+            instance['total'] = total
+
         # Sort and filter instances
         repo['instances'] = sorted(repo['instances'], key=lambda instance: instance['timestamp'], reverse=True)
         repo['instances'] = [{k: v for k, v in ins.items() if k not in filter_out} for ins in repo['instances']]
@@ -526,3 +535,14 @@ def filter_results(results):
                 del test['details']
             
         section['tests'] = public_tests
+
+def calc_score(results, is_admin):
+    score = 0
+    total = 0
+
+    for section in results:
+        obj = section['score']['private' if is_admin else 'public']['numeric']
+        score += obj['score']
+        total += obj['total']
+    
+    return score, total

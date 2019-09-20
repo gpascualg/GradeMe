@@ -95,7 +95,7 @@ export default function() {
                                         return <Col key={ ist.hash } span={ 12 }>
                                             <div className={ color_from_status(ist.status) } onclick={ (e) => setroute(e, repo, ist) }>
                                                 { !is_failed(ist.status) && 
-                                                    <span className={ 'bold' }>[x/y]</span>
+                                                    <span className={ 'bold' }>[{ ist.score }/{ ist.total }]</span>
                                                 }
 
                                                 { ist.title }
