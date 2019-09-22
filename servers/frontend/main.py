@@ -85,12 +85,12 @@ def setup_app_routes(app, github, socketio, debug):
         emit('login-status', user)
 
     @socketio.on('fetch-instances')
-    def fetch_instances():
+    def fetch_instances(search):
         before_request()
         if g.user is None:
             emit('user-instances', [])
         else:
-            emit('user-instances', Database().user_instances(g.user['_id']))
+            emit('user-instances', Database().user_instances(g.user['_id'], search))
 
     @socketio.on('fetch-instance-result')
     def fetch_instances(request):

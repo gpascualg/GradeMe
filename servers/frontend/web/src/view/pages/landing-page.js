@@ -1,5 +1,6 @@
 import { Col, Grid, Input, Icon, Icons } from 'construct-ui';
 import { route } from '../components/helper';
+import { onceDBReady, fetch, update } from '../../database';
 
 function color_from_status(status) {
     return 'color-' + ((status) => {
@@ -67,17 +68,29 @@ function printable_users(access_rights) {
 }
 
 function setroute(e, repo, ist) {
-    m.route.set('/results/' + repo._id.org + '/' + repo._id.repo + '/' + ist.hash);
+    route('/results/' + repo._id.org + '/' + repo._id.repo + '/' + ist.hash);
+}
+
+function search(e) {
+    var search = e.srcElement.value;
+
+    onceDBReady.then((db) => {
+        update(db, 'data', {'search': search}).then((res) => {
+            route('/index');
+        });
+    });
 }
 
 export default function() {
     var repos = [];
     var user = undefined;
+    var config = undefined;
 
     return {
         oninit(vnode) {
             repos = vnode.attrs.repos;
             user = vnode.attrs.user;
+            config = vnode.attrs.config;
         },
         view() {
             return [
@@ -90,9 +103,11 @@ export default function() {
                                 size='lg'
                                 fluid={ true }
                                 contentRight={ <Icon name={ Icons.SEARCH } size='lg' onclick={ (e) => search(e) }></Icon> }
+                                onchange={ (e) => search(e) }
+                                value={ config.search || '' }
                             ></Input>
                         </div>
-                    },
+                    }
                 </div>,
                 <Grid key='grid' justify="center">
                     { repos.map((repo) => {

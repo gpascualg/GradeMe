@@ -251,21 +251,34 @@ class Database(object):
             }
         )
 
-    def user_instances(self, user):
+    def user_instances(self, user, search):
         orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
             {'orgs.$' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
+        
+        search_query = {
+            '$or': 
+            [
+                { 'access_rights.id': user },
+                *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
+            ]
+        }
+
+        if search is not None:
+            # TODO(gpascualg): Search NIUB -> id
+            search_query = {
+                '$and': [
+                    search_query,
+                    {
+                        { 'access_rights.id': search }
+                    }
+                ]
+            }
 
         user_repos = self.repos.find(
-            {
-                '$or': 
-                [
-                    { 'access_rights.id': user },
-                    *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
-                ]
-            },
+            search_query,
             {
                 '_id': 1,
                 'name': 1,

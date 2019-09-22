@@ -9,6 +9,9 @@ import IndexPage from './pages/landing-page';
 import LoginPage from './pages/login-page';
 import ResultsPage from './pages/results-page'
 
+// Database
+import { onceDBReady, fetch } from '../database';
+
 // Websockets
 import io from 'socket.io-client';
 
@@ -17,52 +20,6 @@ const $root = document.body.querySelector('#root');
 let socketio_url = $root.dataset.mode == 'development' ? 'localhost:9090' : 'grade-me.education';
 const socket = io('http://' + socketio_url);
 
-let onceDBReady = new Promise((resolve) => {
-    var request = indexedDB.open('grademe', 2);
-    
-    request.onsuccess = () => {
-        resolve(request.result);
-    };
-
-    request.onupgradeneeded = (event) => {
-        console.log('UPGRADE');
-        var db = event.target.result;
-      
-        // Decks table
-        var decksStore = db.createObjectStore('tests', { keyPath: 'id' });
-        decksStore.createIndex('hash', 'hash', { unique: true });
-
-        var lastStore = db.createObjectStore('last', { keyPath: 'id' });
-        lastStore.createIndex('hash', 'hash', { unique: true });
-    };
-});
-
-function cursor(db, table, index_or_where, where) {
-    var objectStore = db.transaction(table).objectStore(table);
-
-    if (typeof index_or_where == 'undefined' || typeof where == 'undefined') {
-        return objectStore.openCursor(index_or_where);
-    }
-
-    return objectStore.index(index_or_where).openCursor(where);
-}
-
-function fetch(db, table, index_or_where, where) {
-    return new Promise((resolve) => {
-        let data = [];
-
-        cursor(db, table, index_or_where, where).onsuccess = (event) => {
-            var cursor = event.target.result;
-            if (cursor) {
-                data.push(cursor.value);
-                cursor.continue();
-            }
-            else {
-                resolve(data);
-            }
-        };
-    });
-}
 
 function lazyLoad(page, dataLoader) {
     return {
@@ -142,20 +99,23 @@ const Routes = {
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
         onceSocketReady.then(([socket, user_information]) => {
             if (user_information != null) {
-                fetch(db, 'last', 'id').then((data) => {
-                    console.log('last ' + data);
+                fetch(db, 'data').then((data) => {
+                    var config = {}
+                    for (let i = 0; i < data.length; ++i) {
+                        config[data[i].key] = data[i].value;
+                    }
 
                     socket.once('user-instances', (instances) => {
-                        console.log(instances);
                         resolve(() => {
                             return {
                                 'repos': instances,
-                                'user': user_information
+                                'user': user_information,
+                                'config': config
                             }
                         });
                     });
 
-                    socket.emit('fetch-instances');
+                    socket.emit('fetch-instances', config.search || null);
                 });
             } 
             else {
