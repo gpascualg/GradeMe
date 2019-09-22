@@ -112,6 +112,7 @@ export default function() {
                     }
                 </div>,
                 <Grid key='grid' justify="center">
+                    { repos.length == 0 && <Col span={ 12 }><div className={ 'section-header center' }>There are no tests</div></Col> }
                     { repos.map((repo) => {
                         return <Col key={ repo.org_name + '/' + repo.name } span={ 12 }>
                             <div className={ 'color-repo' } onclick={ (e) => toggle(e, repo) }>

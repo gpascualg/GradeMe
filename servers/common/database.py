@@ -197,9 +197,14 @@ class Database(object):
             {'_id.org' : org, '_id.repo': repo}
         )
 
-    def get_user(self, username):
+    def get_user(self, id):
         return self.users.find_one(
-            {'_id': username}
+            {'_id': id}
+        )
+
+    def get_user_by_name(self, name):
+        return self.users.find_one(
+            {'name': name}
         )
 
     def get_teams(self, org, repo):
@@ -267,7 +272,7 @@ class Database(object):
         }
 
         if search is not None:
-            user_id = self.get_user(search)
+            user_id = self.get_user_by_name(search)
             if user_id is None:
                 # TODO(gpascualg): Search NIUB -> id
                 return []
