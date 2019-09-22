@@ -478,6 +478,10 @@ class Database(object):
 
     def user(self, id):
         return self.users.find_one({'_id': id})
+        
+    # def is_user_admin(self, user):
+    #     return (u['_id'] for u in \
+    #         self.users.find({'_id': user, 'orgs.admin': True}))
 
     def Try(self):
         def wrap(f):

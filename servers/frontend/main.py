@@ -80,6 +80,7 @@ def setup_app_routes(app, github, socketio, debug):
             user = {'_id': 0, 'username': 'debug-username'}
         elif g.user is not None:
             user = {k: v for k, v in g.user.items() if k not in NOT_BROADCASTABLE_FIELDS}
+            user['is_admin'] = any('admin' in org and org['admin'] for org in user['orgs'])
             
         emit('login-status', user)
 

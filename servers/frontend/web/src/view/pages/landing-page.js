@@ -1,4 +1,4 @@
-import { Col, Grid } from 'construct-ui';
+import { Col, Grid, Input, Icon, Icons } from 'construct-ui';
 import { route } from '../components/helper';
 
 function color_from_status(status) {
@@ -72,14 +72,28 @@ function setroute(e, repo, ist) {
 
 export default function() {
     var repos = [];
+    var user = undefined;
 
     return {
         oninit(vnode) {
             repos = vnode.attrs.repos;
+            user = vnode.attrs.user;
         },
         view() {
             return [
-                <h1 key='h1'>Tests: </h1>,
+                <div key='header'>
+                    <h1 key='h1'>Tests</h1>
+                    {
+                        user.is_admin && <div class='search-div'>
+                            <Input 
+                                placeholder={ 'Username or niub' }
+                                size='lg'
+                                fluid={ true }
+                                contentRight={ <Icon name={ Icons.SEARCH } size='lg' onclick={ (e) => search(e) }></Icon> }
+                            ></Input>
+                        </div>
+                    },
+                </div>,
                 <Grid key='grid' justify="center">
                     { repos.map((repo) => {
                         return <Col key={ repo.org_name + '/' + repo.name } span={ 12 }>

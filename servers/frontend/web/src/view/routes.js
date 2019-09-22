@@ -149,7 +149,8 @@ const Routes = {
                         console.log(instances);
                         resolve(() => {
                             return {
-                                'repos': instances
+                                'repos': instances,
+                                'user': user_information
                             }
                         });
                     });
