@@ -75,7 +75,7 @@ function search(e) {
     var search = e.srcElement.value;
 
     onceDBReady.then((db) => {
-        update(db, 'data', {'search': search}).then((res) => {
+        update(db, 'data', {'key': 'search', 'value': search}).then((res) => {
             route('/index');
         });
     });
