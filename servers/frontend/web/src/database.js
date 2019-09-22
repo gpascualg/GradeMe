@@ -15,6 +15,11 @@ var onceDBReady = new Promise((resolve) => {
         var testsStore = db.createObjectStore('tests', { keyPath: 'id' });
         testsStore.createIndex('hash', 'hash', { unique: true });
 
+        testsStore.transaction.oncomplete = (/* event */) => {
+            var objectStore = db.transaction('data', 'readwrite').objectStore('data');
+            objectStore.add({key: 'search', value: null});
+        };
+
         // Other data
         var dataStore = db.createObjectStore('data', { keyPath: 'key' });
         dataStore.createIndex('value', 'value', { unique: false });
