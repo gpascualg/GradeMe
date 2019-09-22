@@ -1,5 +1,5 @@
 
-let onceDBReady = new Promise((resolve) => {
+var onceDBReady = new Promise((resolve) => {
     var request = indexedDB.open('grademe', 3);
     
     request.onsuccess = () => {
@@ -57,3 +57,5 @@ function update(db, table, data) {
         };
     });
 }
+
+export { onceDBReady, cursor, fetch, update };
