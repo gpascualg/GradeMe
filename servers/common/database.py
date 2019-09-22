@@ -4,6 +4,7 @@ from datetime import datetime
 import random
 import string
 import itertools
+import re
 
 
 CACHES = {}
@@ -204,7 +205,7 @@ class Database(object):
 
     def get_user_by_name(self, name):
         return self.users.find_one(
-            {'name': name}
+            {'name': re.compile(name, re.IGNORECASE)}
         )
 
     def get_teams(self, org, repo):
@@ -281,7 +282,7 @@ class Database(object):
                 '$and': [
                     search_query,
                     {
-                        'access_rights.id': user_id
+                        'access_rights.id': user_id['_id']
                     }
                 ]
             }

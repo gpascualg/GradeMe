@@ -42,6 +42,14 @@ h3 {
 	margin-bottom: 15px;
 }
 
+.cui-input {
+	background: none;
+}
+
+.cui-input > input {
+	background: $grey200;
+}
+
 .cui-col-12 > div {
 	padding: 10px;
 	border: 1px solid black;
