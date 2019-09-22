@@ -79,6 +79,8 @@ function search(e) {
             route('/index');
         });
     });
+
+    return search;
 }
 
 export default function() {
@@ -102,8 +104,8 @@ export default function() {
                                 placeholder={ 'Username or niub' }
                                 size='lg'
                                 fluid={ true }
-                                contentRight={ <Icon name={ Icons.SEARCH } size='lg' onclick={ (e) => search(e) }></Icon> }
-                                onchange={ (e) => search(e) }
+                                contentRight={ <Icon name={ Icons.SEARCH } size='lg' onclick={ (e) => config.search = search(e) }></Icon> }
+                                onchange={ (e) => config.search = search(e) }
                                 value={ config.search || '' }
                             ></Input>
                         </div>

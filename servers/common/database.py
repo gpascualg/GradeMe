@@ -267,12 +267,16 @@ class Database(object):
         }
 
         if search is not None:
-            # TODO(gpascualg): Search NIUB -> id
+            user_id = self.get_user(search)
+            if user_id is None:
+                # TODO(gpascualg): Search NIUB -> id
+                return []
+
             search_query = {
                 '$and': [
                     search_query,
                     {
-                        { 'access_rights.id': search }
+                        'access_rights.id': user_id
                     }
                 ]
             }
