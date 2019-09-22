@@ -205,7 +205,7 @@ class Database(object):
 
     def get_user_by_name(self, name):
         return self.users.find_one(
-            {'name': re.compile(name, re.IGNORECASE)}
+            {'name': re.compile(re.escape(name), re.IGNORECASE)}
         )
 
     def get_teams(self, org, repo):

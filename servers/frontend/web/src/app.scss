@@ -58,6 +58,7 @@ h3 {
 	transition: max-height 0.15s ease-out;
 	max-height: 1000px;
 	overflow: hidden;
+	user-select: none;
 }
 
 .timestamp {
