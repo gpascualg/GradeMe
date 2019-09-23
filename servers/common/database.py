@@ -305,9 +305,10 @@ class Database(object):
     def instance_result(self, user, org, repo, hash):
         orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
-            {'orgs.$' : 1}
+            {'orgs' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
+        orgs_where_admin = [org['id'] for org in orgs_where_admin['orgs'] if org['admin']]
 
         instance = self.repos.find_one(
             {
@@ -317,7 +318,7 @@ class Database(object):
                         '$or': 
                         [
                             { 'access_rights.id': user },
-                            *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
+                            *[{ '_id.org' : x } for x in orgs_where_admin]
                         ]
                     },
                     {
