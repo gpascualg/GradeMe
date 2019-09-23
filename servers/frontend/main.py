@@ -141,6 +141,8 @@ def main(return_app=False):
     setup_app_routes(app, github, socketio, args.debug)
 
     if return_app:
+        # Avoid having an instance in the fork
+        Database.reset()
         return app
 
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)

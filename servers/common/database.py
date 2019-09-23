@@ -39,6 +39,13 @@ class Database(object):
     def initialize(host):
         Database.__host = host
 
+    @staticmethod
+    def reset():
+        if Database.__instance is not None:
+            Database().client.close()
+        
+        Database.__instance = None
+    
     def __new__(cls):
         if Database.__instance is None:
             Database.__instance = object.__new__(cls)

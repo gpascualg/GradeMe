@@ -9,6 +9,15 @@ services:
     volumes:
       - secrets:/run/secrets:rw
 
+  ro-secret-sim:
+    image: mikesir87/secrets-simulator
+    environment:
+      RABBIT_USER: admin
+      RABBIT_PASS: password1234
+      FLASK_SECRET: qweqwe
+    volumes:
+      - secrets:/run/secrets:rw
+
   webhooks:
     build: 
       context: .
@@ -61,9 +70,9 @@ services:
       - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/RABBIT_USER
       - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/RABBIT_PASS
     volumes:
-      - secrets:/run/secrets:ro
+      - ro-secrets:/run/secrets:ro
     depends_on:
-      - secrets-simulator
+      - ro-secret-sim
     expose:
       - 5672
     networks:
@@ -114,3 +123,6 @@ volumes:
   secrets:
     driver: local
     name: grademe-secrets
+  ro-secrets:
+    driver: local
+    name: readonly-secrets

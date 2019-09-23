@@ -178,6 +178,8 @@ def main(return_app):
     setup_app_routes(app)
 
     if return_app:
+        # Avoid having an instance in the fork
+        Database.reset()
         return app
 
     app.run(host=args.host, port=args.port, debug=args.debug)
