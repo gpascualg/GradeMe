@@ -1,3 +1,7 @@
+if __name__ == '__main__':
+    from gevent import monkey
+    monkey.patch_all()
+    
 from servers.frontend.main import main
 from distutils.dir_util import copy_tree
 

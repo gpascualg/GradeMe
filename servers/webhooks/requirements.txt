@@ -7,3 +7,4 @@ npyscreen==4.10.5
 pika==1.1.0
 PyYAML==3.12
 uWSGI==2.0.18
+gevent==1.4.0
