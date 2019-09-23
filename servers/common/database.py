@@ -260,15 +260,16 @@ class Database(object):
     def user_instances(self, user, search):
         orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
-            {'orgs.$' : 1}
+            {'orgs' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
+        orgs_where_admin = [org['_id'] for org in orgs_where_admin['orgs'] if org['admin']]
         
         search_query = {
             '$or': 
             [
                 { 'access_rights.id': user },
-                *[{ '_id.org' : x['id'] } for x in orgs_where_admin['orgs']]
+                *[{ '_id.org' : x } for x in orgs_where_admin]
             ]
         }
 

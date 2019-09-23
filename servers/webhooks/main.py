@@ -85,11 +85,12 @@ def main(return_app):
     parser.add_argument('--no-cli', action='store_true', help='Do not display CLI')
     parser.add_argument('--host', type=str, default='localhost', help='Server hostname')
     parser.add_argument('--port', type=int, default=80, help='Server port')
-    parser.add_argument('--debug', action='store_true', help='Run server in debug mode')    
+    parser.add_argument('--debug', action='store_true', help='Run server in debug mode')
+    parser.add_argument('--debug-log', action='store_true', help='Log debug messages')
     args = parser.parse_args()
 
     # Logging level
-    logging_level = logging.DEBUG if args.debug else logging.ERROR
+    logging_level = logging.DEBUG if args.debug or args.debug_log else logging.ERROR
     setup_logger(logging_level)
 
     # Arguments may be submitted in ENV variables (specially in Docker via docker-compose)
@@ -116,7 +117,7 @@ def main(return_app):
     
     # Create, if not-existing, organizations
     for org in args.github_fake_id or []:
-        Database().create_organization_if_not_exists(org, 'fake-org-{}'.format(org))
+        Database().create_organization_if_not_exists(org, 'fake-org-{}'.format(org), fake=True)
 
     # Make sure we have all users, admins, etc.
     if not args.no_github_init:

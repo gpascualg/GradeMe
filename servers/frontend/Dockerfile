@@ -18,5 +18,6 @@ RUN cd /code/servers/frontend/web && \
 	mv dist/index.html ../templates/ 
 
 VOLUME ["/static"]
+ENV PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "uwsgi"]

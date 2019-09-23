@@ -9,5 +9,6 @@ RUN apk --update add --no-cache python3 py3-pip docker linux-headers openssl-dev
 
 ADD . /code
 WORKDIR /code
+ENV PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "uwsgi"]
