@@ -3,8 +3,8 @@ import gevent
 import os
 import json
 import threading
+import uwsgidecorators
 
-from uwsgi import uwsgidecorators
 from os.path import basename
 
 from ..common.database import Database

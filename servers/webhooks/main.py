@@ -183,11 +183,11 @@ def main(return_app):
     # Setup app and run it
     setup_app_routes(app)
 
-    # Reset database (to avoid fork issues)
-    Database.reset()
-
     # Start handling jobs
     JobsOrchestrator()
+
+    # Reset database (to avoid fork issues)
+    Database.reset()
 
     if return_app:
         return app

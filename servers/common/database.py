@@ -56,6 +56,9 @@ class Database(object, metaclass=ThreadedSingleton):
         self.orgs = self.db.organizations
         self.jobs = self.db.jobs
 
+    def close(self):
+        self.client.close()
+
     @cache('config')
     def get_config(self):
         return self.config.find_one()

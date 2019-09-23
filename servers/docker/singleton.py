@@ -12,6 +12,11 @@ class Singleton(type):
         instances = iter(cls._instances.values())
         return [next(instances) for _ in range(idx + 1)][0]
     def reset(cls):
+        for obj in cls._instances.values():
+            try:
+                obj.close()
+            except:
+                pass
         cls._instances.clear()
 
 class ThreadedSingleton(type):
@@ -26,4 +31,9 @@ class ThreadedSingleton(type):
         instances = iter(cls._instances.values())
         return [next(instances) for _ in range(idx + 1)][0]
     def reset(cls):
+        for obj in cls._instances.values():
+            try:
+                obj.close()
+            except:
+                pass
         cls._instances.clear()
