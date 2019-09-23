@@ -169,9 +169,6 @@ def main(return_app):
     logger.info('Rescheduling jobs')
     Database().reschedule_jobs()
 
-    # Start handling jobs
-    JobsOrchestrator()
-
     # Mocking purposes
     if args.github_fake_id:
         GithubMethods.MOCK_ORG_ID = args.github_fake_id[0]
@@ -185,6 +182,12 @@ def main(return_app):
 
     # Setup app and run it
     setup_app_routes(app)
+
+    # Reset database (to avoid fork issues)
+    Database.reset()
+
+    # Start handling jobs
+    JobsOrchestrator()
 
     if return_app:
         return app

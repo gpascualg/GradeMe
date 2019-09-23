@@ -37,11 +37,12 @@ class JobsOrchestrator(object, metaclass=Singleton):
         config = Database().get_config()
         self._oauth_token = config['oauth_token']
         self._stop = False
-        self._iden = threading.get_ident()
 
         if not os.environ.get('DISABLE_POOL'):
             for _ in range(config['parallel_jobs']):
-                greenlet.Greenlet.spawn(self.update)
+                ready = gevent.event.Event()
+                greenlet.Greenlet.spawn(self.update, ready)
+                ready.wait()
 
     def __once_done(self, result):
         meta, log = result
@@ -86,8 +87,10 @@ class JobsOrchestrator(object, metaclass=Singleton):
     def handle(self, job):
         return self.__once_done(self.__process_job(job))
 
-    def update(self):
-        while not self._stop and self._iden == threading.get_ident():
+    def update(self, ready):
+        ready.set()
+
+        while not self._stop:
             job = Database().get_job()
             if job is not None:
                 self.handle(job)

@@ -4,7 +4,6 @@ import threading
 class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
-        print('call')
         key = (cls, *args, *kwargs.items())
         if key not in cls._instances:
             cls._instances[key] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -12,6 +11,8 @@ class Singleton(type):
     def get(cls, idx=0):
         instances = iter(cls._instances.values())
         return [next(instances) for _ in range(idx + 1)][0]
+    def reset(cls):
+        cls._instances.clear()
 
 class ThreadedSingleton(type):
     _instances = {}
@@ -24,3 +25,5 @@ class ThreadedSingleton(type):
     def get(cls, idx=0):
         instances = iter(cls._instances.values())
         return [next(instances) for _ in range(idx + 1)][0]
+    def reset(cls):
+        cls._instances.clear()
