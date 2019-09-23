@@ -4,6 +4,7 @@ import os
 import json
 import threading
 
+from uwsgi import uwsgidecorators
 from os.path import basename
 
 from ..common.database import Database
@@ -37,6 +38,11 @@ class JobsOrchestrator(object, metaclass=Singleton):
         config = Database().get_config()
         self._oauth_token = config['oauth_token']
         self._stop = False
+        self._start = gevent.event.Event()
+
+        @uwsgidecorators.postfork
+        def once_forked():
+            self._start.set()
 
         if not os.environ.get('DISABLE_POOL'):
             for _ in range(config['parallel_jobs']):
@@ -89,6 +95,7 @@ class JobsOrchestrator(object, metaclass=Singleton):
 
     def update(self, ready):
         ready.set()
+        self._start.wait()
 
         while not self._stop:
             job = Database().get_job()
