@@ -5,6 +5,7 @@ import random
 import string
 import itertools
 import re
+import threading
 
 
 CACHES = {}
@@ -32,7 +33,7 @@ def clear_caches():
         clear_cache(key)
 
 class Database(object):
-    __instance = None
+    __instance = {}
     __host = None
 
     @staticmethod
@@ -47,10 +48,11 @@ class Database(object):
         Database.__instance = None
     
     def __new__(cls):
-        if Database.__instance is None:
-            Database.__instance = object.__new__(cls)
+        ident = threading.get_ident()
+        if Database.__instance.get(ident) is None:
+            Database.__instance[ident] = object.__new__(cls)
             
-        return Database.__instance
+        return Database.__instance[ident]
 
     def __init__(self):
         # Connect
@@ -65,6 +67,7 @@ class Database(object):
         self.teams = self.db.teams
         self.sessions = self.db.sessions
         self.orgs = self.db.organizations
+        self.jobs = self.db.jobs
 
     @cache('config')
     def get_config(self):
@@ -510,6 +513,43 @@ class Database(object):
 
     def user(self, id):
         return self.users.find_one({'_id': id})
+
+    def push_job(self, meta):
+        self.jobs.insert_one(
+            { 
+                '_id':
+                {
+                    'org': meta['org']['id'],
+                    'repo': meta['repo']['id'],
+                    'hash': meta['hash']
+                },
+                **meta,
+                'timestamp': int(datetime.timestamp(datetime.now())),
+                'status': pending
+            }
+        )
+
+    def get_job(self):
+        self.jobs.find_one_and_update(
+            {'status': 'pending'},
+            {'$set': {'status': 'processing'}},
+            sort=[('timestamp', 1)]
+        )
+
+    def remove_job(self, meta):
+        self.jobs.delete_one(
+            {
+                '_id':
+                {
+                    'org': meta['org']['id'],
+                    'repo': meta['repo']['id'],
+                    'hash': meta['hash']
+                }
+            }
+        )
+
+    def reschedule_jobs(self):
+        self.jobs.update_many({}, {'status': 'pending'})
         
     # def is_user_admin(self, user):
     #     return (u['_id'] for u in \

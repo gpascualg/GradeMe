@@ -163,6 +163,10 @@ def main(return_app):
         limits = g.get_rate_limit()
         logger.info(f"API calls: {limits.core.remaining}/{limits.core.limit} - Resets on {limits.core.reset}")
 
+    # Reschedule pending jobs
+    logger.info('Rescheduling jobs')
+    Database().reschedule_jobs()
+
     # Mocking purposes
     if args.github_fake_id:
         GithubMethods.MOCK_ORG_ID = args.github_fake_id[0]

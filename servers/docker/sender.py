@@ -1,5 +1,6 @@
 import pika
 import json
+import threading
 from threading import Thread
 from queue import Queue
 
@@ -14,14 +15,20 @@ class MessageSender(object):
         # This is not the most beautiful code out there
         # If there is more than one instance running (or none), expect the unexpected
         if queue is None:
-            queue = next(iter(MessageSender.__instance.keys()))
-        return MessageSender.__instance.get(queue)
+            ident = next(iter(MessageSender.__instance.keys()))
+        else:
+            ident = threading.get_ident()
+            ident = (ident, queue)
+
+        return MessageSender.__instance.get(ident)
 
     def __new__(cls, host, queue):
-        if MessageSender.__instance.get(queue) is None:
-            MessageSender.__instance[queue] = object.__new__(cls)
+        ident = threading.get_ident()
+        ident = (ident, queue)
+        if MessageSender.__instance.get(ident) is None:
+            MessageSender.__instance[ident] = object.__new__(cls)
             
-        return MessageSender.__instance[queue]
+        return MessageSender.__instance[ident]
 
     def __init__(self, host, queue):
         # Save rabbit credentials

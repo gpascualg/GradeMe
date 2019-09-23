@@ -1,9 +1,7 @@
-from multiprocessing import Pool
-
-import subprocess
+from gevent import subprocess, greenlet
+import gevent
 import os
 import json
-import tempfile
 
 from os.path import basename
 
@@ -58,7 +56,10 @@ class Jobs(object):
     def __init__(self):
         config = Database().get_config()
         self.oauth_token = config['oauth_token']
-        self.pool = Pool(config['parallel_jobs'])
+
+        if not os.environ.get('DISABLE_POOL'):
+            for _ in range(config['parallel_jobs']):
+                greenlet.Greenlet.spawn(self.update)
     
     def __once_done(self, result):
         meta, log = result
@@ -69,6 +70,9 @@ class Jobs(object):
         # RM volume
         retrieve_stdout(['docker', 'volume', 'rm', meta['hash'] + '-data'])
 
+        # Flag done
+        Database().remove_job(meta)
+
         return True
     
     def post(self, meta):
@@ -78,4 +82,13 @@ class Jobs(object):
         if os.environ.get('DISABLE_POOL'):
             return self.__once_done(process_job(meta, self.oauth_token))
         else:
-            return self.pool.apply_async(process_job, (meta, self.oauth_token), callback=self.__once_done)
+            Database().push_job(meta)
+
+    def update(self):
+        while not self.stop:
+            job = Database().get_job()
+            if job is not None:
+                self.__once_done(process_job(meta, self.oauth_token))
+
+            gevent.sleep(0.1)
+    

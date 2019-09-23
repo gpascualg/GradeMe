@@ -1,5 +1,6 @@
 import pika
 import json
+import threading
 from queue import Queue, Empty
 
 from .message_type import MessageType
@@ -9,10 +10,12 @@ class MessageListener(object):
     __instance = {}
     
     def __new__(cls, host, queue, messages=None):
-        if MessageListener.__instance.get(queue) is None:
-            MessageListener.__instance[queue] = object.__new__(cls)
+        ident = threading.get_ident()
+        ident = (ident, queue)
+        if MessageListener.__instance.get(ident) is None:
+            MessageListener.__instance[ident] = object.__new__(cls)
             
-        return MessageListener.__instance[queue]
+        return MessageListener.__instance[ident]
 
     def __init__(self, host, queue, messages=None):
         with open('/run/secrets/RABBIT_USER') as fp:
