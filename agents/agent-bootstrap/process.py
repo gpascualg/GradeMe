@@ -82,8 +82,8 @@ def continue_process(instance, data, rabbit_channel):
     docker_id = subprocess.check_output(['docker', 'run', 
         '-d', '-t',
         '-v', '/instance:/instance',
-        '--mount', 'source=' + volume_name + ',target=/tests,readonly',
-        '--mount', 'source=grademe-secrets,target=/run/secrets,readonly',
+        '--mount', 'source=' + volume_name + ',target=/tests',
+        '--mount', 'source=grademe-secrets,target=/run/secrets',
         '--network', 'results',
         agent_name, *agent_opts, agent_name, rabbit_channel], stderr=subprocess.PIPE)
     
