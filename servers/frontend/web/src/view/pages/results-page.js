@@ -97,6 +97,26 @@ function printable_score(score, def, b, a) {
     return b + score_str + a;
 }
 
+function printable_failure(reason) {
+    switch (reason)
+    {
+        case 'NotImplementedError':
+            return 'Function not yet implemented';
+
+        case 'MemoryError':
+            return 'Execution ran out of memory';
+        
+        case 'AssertionError':
+            return 'Test failed an assertion';
+
+        case 'GenericError':
+            return 'Test failed to execute';
+
+        default:
+            return reason;
+    }
+}
+
 function test_score(score, total) {
     if (typeof score === 'undefined' || typeof total == 'undefined') {
         return '';
@@ -132,7 +152,7 @@ export default function() {
                                 <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
                                     { 'Import error: ' + test.module }
                                 </div>
-                                <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
+                                <Grid key={ section.name + '/tests' } className={ 'tests-section' }>
                                     <Col key={ section.name + '/tests/' + i } span={ 12 }>
                                         <div className={ 'color-red test-header' }>
                                             <span className={ 'test-name' }>{ test.error }</span>
@@ -154,7 +174,7 @@ export default function() {
                                         { printable_score(section.score.private, "", " · [", "]") }
                                     </div>
                                 </div>
-                                <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
+                                <Grid key={ section.name + '/tests' } className={ 'tests-section' }>
                                     {
                                         section.tests.map((test, i) => {
                                             return <Col key={ section.name + '/tests/' + i } span={ 12 }>
@@ -166,8 +186,8 @@ export default function() {
                                                 </div>
                                                 <div className={ 'inner-test' }>
                                                     <div className={ 'test-desc' }>{ test.desc }</div>
-                                                    <div className={ 'test-details' }>{ test.details }</div>
-                                                    <div className={ 'test-failure' }>{ test.failure_reason }</div>
+                                                    { test.details != 'None' && <div className={ 'test-details' }>{ test.details }</div> }
+                                                    <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
                                                     <div className={ 'test-hint' }>{ test.hint }</div>
                                                 </div>
                                             </Col>

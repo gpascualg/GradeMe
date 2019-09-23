@@ -105,13 +105,18 @@ h3 {
 
 .tests-section {
 	padding: 0;
-	max-height: 1000px;
+	max-height: inherit !important;
+	cursor: default !important;
 }
 
 .tests-section > .cui-col-12 {
 	border: 1px solid black;
 	box-shadow: inset 0px 0px 5px 1px rgba(0,0,0,0.75);
 	margin-bottom: 10px;
+}
+
+.tests-section > .cui-col-12 > div {
+	cursor: default !important;
 }
 
 .inner-test {
