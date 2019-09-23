@@ -115,7 +115,7 @@ export default function() {
                     { repos.length == 0 && <Col span={ 12 }><div className={ 'section-header center' }>There are no tests</div></Col> }
                     { repos.map((repo) => {
                         return <Col key={ repo.org_name + '/' + repo.name } span={ 12 }>
-                            <div className={ 'color-repo' } onclick={ (e) => toggle(e, repo) }>
+                            <div className={ 'color-repo' } onclick={ ((repo) => (e) => toggle(e, repo))(repo) }>
                                 { repo.org_name }/{ repo.name }
                                 <div className={ 'timestamp' }>
                                     [{ printable_users(repo.access_rights) }]
@@ -125,7 +125,7 @@ export default function() {
                                 {
                                     repo.instances.map((ist) => {
                                         return <Col key={ ist.hash } span={ 12 }>
-                                            <div className={ color_from_status(ist.status) } onclick={ (e) => setroute(e, repo, ist) }>
+                                            <div className={ color_from_status(ist.status) } onclick={ ((repo, ist) => (e) => setroute(e, repo, ist))(repo, ist) }>
                                                 { !is_failed(ist.status) && 
                                                     <span className={ 'bold' }>[{ ist.score }/{ ist.total }] </span>
                                                 }
