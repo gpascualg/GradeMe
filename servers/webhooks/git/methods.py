@@ -40,7 +40,7 @@ class GithubMethods(object):
 
             Database().remove_member_from_repo(org, repo, member)
         elif action == 'added':
-            Database().add_organization_member(org, member, name, 'user')
+            Database().add_organization_member(org, member, name, 'member')
             Database().add_member_to_repo(org, repo, member)
 
         logger.info(f'Member: {action} {member} in {org}:{repo}')

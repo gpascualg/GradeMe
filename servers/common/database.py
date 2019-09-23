@@ -399,7 +399,7 @@ class Database(object):
             {
                 '$addToSet':
                 {
-                    'permissions': {'id': member, 'permission': 'member'}
+                    'access_rights': {'id': member, 'permission': 'member'}
                 }
             }
         )
@@ -410,7 +410,7 @@ class Database(object):
             {
                 '$pull':
                 {
-                    'permissions': {'id': member, 'permission': 'member'}
+                    'access_rights': {'id': member, 'permission': 'member'}
                 }
             }
         )
