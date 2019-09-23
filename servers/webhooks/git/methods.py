@@ -147,8 +147,12 @@ class GithubMethods(object):
             Database().create_repository(org, repo, name, author)
 
         # Create a test based on the commit message
-        commit = filter(lambda x: x['id'] == sha, payload['commits'])
-        message = next(commit)['message']
+        try:
+            commit = filter(lambda x: x['id'] == sha, payload['commits'])
+            message = next(commit)['message']
+        except:
+            message = payload['head_commit']['message']
+        
         Database().create_instance(org, repo, sha, branch, message)
 
         # This push information into the queue
