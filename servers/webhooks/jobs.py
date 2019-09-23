@@ -56,6 +56,7 @@ class Jobs(object):
     def __init__(self):
         config = Database().get_config()
         self.oauth_token = config['oauth_token']
+        self._stop = False
 
         if not os.environ.get('DISABLE_POOL'):
             for _ in range(config['parallel_jobs']):
@@ -74,6 +75,9 @@ class Jobs(object):
         Database().remove_job(meta)
 
         return True
+
+    def stop(self):
+        self._stop = True
     
     def post(self, meta):
         MessageSender('rabbit', 'jobs').send(MessageType.JOB_QUEUED, meta)
@@ -85,7 +89,7 @@ class Jobs(object):
             Database().push_job(meta)
 
     def update(self):
-        while not self.stop:
+        while not self._stop:
             job = Database().get_job()
             if job is not None:
                 self.__once_done(process_job(meta, self.oauth_token))

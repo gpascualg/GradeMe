@@ -42,10 +42,11 @@ class Database(object):
 
     @staticmethod
     def reset():
-        if Database.__instance is not None:
+        ident = threading.get_ident()
+        if Database.__instance.get(ident):
             Database().client.close()
         
-        Database.__instance = None
+        del Database.__instance[ident]
     
     def __new__(cls):
         ident = threading.get_ident()
@@ -525,7 +526,7 @@ class Database(object):
                 },
                 **meta,
                 'timestamp': int(datetime.timestamp(datetime.now())),
-                'status': pending
+                'status': 'pending'
             }
         )
 
@@ -549,7 +550,7 @@ class Database(object):
         )
 
     def reschedule_jobs(self):
-        self.jobs.update_many({}, {'status': 'pending'})
+        self.jobs.update_many({}, {'$set': {'status': 'pending'}})
         
     # def is_user_admin(self, user):
     #     return (u['_id'] for u in \
