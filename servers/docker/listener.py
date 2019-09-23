@@ -14,10 +14,11 @@ class MessageListener(object):
         ident = (ident, queue)
         if MessageListener.__instance.get(ident) is None:
             MessageListener.__instance[ident] = object.__new__(cls)
+            MessageListener.__instance[ident].__init(host, queue, messages)
             
         return MessageListener.__instance[ident]
 
-    def __init__(self, host, queue, messages=None):
+    def __init(self, host, queue, messages=None):
         with open('/run/secrets/RABBIT_USER') as fp:
             rabbit_username = fp.read().strip()
         with open('/run/secrets/RABBIT_PASS') as fp:

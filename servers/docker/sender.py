@@ -27,10 +27,11 @@ class MessageSender(object):
         ident = (ident, queue)
         if MessageSender.__instance.get(ident) is None:
             MessageSender.__instance[ident] = object.__new__(cls)
+            MessageSender.__instance[ident].__init(host, queue)
             
         return MessageSender.__instance[ident]
 
-    def __init__(self, host, queue):
+    def __init(self, host, queue):
         # Save rabbit credentials
         with open('/run/secrets/RABBIT_USER') as fp:
             rabbit_username = fp.read().strip()

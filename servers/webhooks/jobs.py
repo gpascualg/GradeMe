@@ -51,9 +51,11 @@ class Jobs(object):
     def __new__(cls):
         if Jobs.__instance is None:
             Jobs.__instance = object.__new__(cls)
+            Jobs.__instance.__init()
         return Jobs.__instance
 
-    def __init__(self):
+    def __init(self):
+        logger.info("Jobs initializing")
         config = Database().get_config()
         self.oauth_token = config['oauth_token']
         self._stop = False
@@ -92,7 +94,7 @@ class Jobs(object):
         while not self._stop:
             job = Database().get_job()
             if job is not None:
-                self.__once_done(process_job(meta, self.oauth_token))
+                self.__once_done(process_job(job, self.oauth_token))
 
             gevent.sleep(0.1)
     

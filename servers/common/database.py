@@ -39,23 +39,16 @@ class Database(object):
     @staticmethod
     def initialize(host):
         Database.__host = host
-
-    @staticmethod
-    def reset():
-        ident = threading.get_ident()
-        if Database.__instance.get(ident):
-            Database().client.close()
-        
-        del Database.__instance[ident]
     
     def __new__(cls):
         ident = threading.get_ident()
         if Database.__instance.get(ident) is None:
             Database.__instance[ident] = object.__new__(cls)
-            
+            Database.__instance[ident].__init()
+
         return Database.__instance[ident]
 
-    def __init__(self):
+    def __init(self):
         # Connect
         self.client = MongoClient(Database.__host)
         self.db = self.client.autograder

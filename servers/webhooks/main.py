@@ -14,6 +14,7 @@ from ..common.database import Database
 from ..common.logger import logger, setup_logger
 from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
+from .jobs import Jobs
 
 
 def setup_app_routes(app):
@@ -181,9 +182,10 @@ def main(return_app):
     # Setup app and run it
     setup_app_routes(app)
 
+    # Execute jobs in the main worker/thread only
+    Jobs()
+
     if return_app:
-        # Avoid having an instance in the fork
-        Database.reset()
         return app
 
     app.run(host=args.host, port=args.port, debug=args.debug)
