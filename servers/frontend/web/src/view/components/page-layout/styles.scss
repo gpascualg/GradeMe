@@ -37,7 +37,7 @@
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 30vh;
+	height: 15vh;
 	padding: 30px;
 	pointer-events: none;
 	opacity: 0;
@@ -58,7 +58,7 @@
 }
 
 .pages-nav__item {
-	width: 33%;
+	width: 25%;
 	padding: 1em;
 }
 
@@ -157,8 +157,8 @@
 	pointer-events: none;
 	-webkit-perspective: 1200px;
 	perspective: 1200px;
-	-webkit-perspective-origin: 50% -50%;
-	perspective-origin: 50% -50%;
+	-webkit-perspective-origin: 50vh -50vh;
+	perspective-origin: 50vh -50vh;
 }
 
 .page {

@@ -179,13 +179,13 @@ export default function() {
                                         section.tests.map((test, i) => {
                                             return <Col key={ section.name + '/tests/' + i } span={ 12 }>
                                                 <div className={ color_from_result(test.score, test.max_score) + ' test-header' }>
-                                                    <span className={ 'test-name' }>{ test.name }</span>
+                                                    <span className={ 'test-name bold' }>{ test.name }</span>
+                                                    { test.desc && <span> - { test.desc }</span> }
                                                     <div className={ 'timestamp' }>
                                                         { test_score(test.score, test.max_score) }
                                                     </div>
                                                 </div>
                                                 <div className={ 'inner-test' }>
-                                                    <div className={ 'test-desc' }>{ test.desc }</div>
                                                     { test.details != 'None' && <div className={ 'test-details' }>{ test.details }</div> }
                                                     <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
                                                     <div className={ 'test-hint' }>{ test.hint }</div>

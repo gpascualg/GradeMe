@@ -22,7 +22,7 @@ export default function() {
             
         let page = document.getElementsByClassName('page')[0];
         if (isMenuOpen) {
-            page.style.transform = 'translate3d(0, 30vh, ' + parseInt(-100) + 'px)';
+            page.style.transform = 'translate3d(0, 20vh, ' + parseInt(-100) + 'px)';
         }
         else {
             page.style.transform = 'translate3d(0, 0, 0)';
@@ -64,6 +64,7 @@ export default function() {
                     <div className="pages-nav__item"><a className="link link--page" href="/index" onclick={ (e) => openPage(e) }>Home</a></div>
                     <div className="pages-nav__item"><a className="link link--page" href="/admin" onclick={ (e) => openPage(e) }>Admin</a></div>
                     <div className="pages-nav__item"><a className="link link--page" href="/changelog" onclick={ (e) => openPage(e) }>Changelog</a></div>
+                    <div className="pages-nav__item"><a className="link link--page" href="/logout">Logout</a></div>
                 </nav>,
 
                 <div className={ classNames({'pages-stack': true, 'pages-stack--open': isTransitionInCourse}) } key='pages-stack'>
