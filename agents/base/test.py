@@ -48,8 +48,7 @@ def main():
     drop_privileges()
 
     # Run tests
-    with tempfile.TemporaryFile('w') as fp:
-        unittest.TextTestRunner(stream=fp, verbosity=0).run(testsuite)
+    unittest.TextTestRunner(verbosity=3).run(testsuite)
 
     # Make sure we close connection
     client.end()

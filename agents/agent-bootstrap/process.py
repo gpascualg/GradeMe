@@ -81,7 +81,7 @@ def continue_process(instance, data, rabbit_channel):
     # Run detached
     docker_id = subprocess.check_output(['docker', 'run', 
         '-d', '-t',
-        '-v', '/instance:/instance',
+        '--mount', 'source=' + os.environ['GITHUB_COMMIT'] + '-data,target=/instance',
         '--mount', 'source=' + volume_name + ',target=/tests',
         '--mount', 'source=grademe-secrets,target=/run/secrets',
         '--network', 'results',

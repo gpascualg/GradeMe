@@ -22,8 +22,7 @@ def retrieve_stdout(command):
     return log
 
 def process_job(meta, oauth_token):
-    instance_path = tempfile.mkdtemp()
-    instance_name = basename(instance_path)
+    instance_name = meta['hash']
 
     retrieve_stdout(['docker', 'create', '-t',
         '-e', 'GITHUB_BRANCH=' + meta['branch'],
@@ -34,7 +33,7 @@ def process_job(meta, oauth_token):
         '-e', 'GITHUB_COMMIT=' + meta['hash'],
         '-e', 'OAUTH_TOKEN=' + oauth_token,
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
-        '--mount', 'type=tmpfs,destination=/instance',
+        '--mount', 'source=' + instance_name + '-data,destination=/instance',
         '--mount', 'source=grademe-secrets,target=/run/secrets,readonly',
         '--network', 'backend',
         '--rm',
@@ -66,6 +65,10 @@ class Jobs(object):
         Database().set_instance_log(meta['org']['id'], meta['repo']['id'], meta['hash'], meta['branch'], log)
         MessageSender('rabbit', 'jobs').send(MessageType.JOB_ENDED, meta)
         logger.info(f'Sending message JOB_ENDED')
+
+        # RM volume
+        retrieve_stdout(['docker', 'volume', 'rm', meta['hash'] + '-data'])
+
         return True
     
     def post(self, meta):

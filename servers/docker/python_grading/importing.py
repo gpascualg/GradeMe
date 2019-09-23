@@ -10,10 +10,7 @@ user_modules = []
 def notify_import_error(module, error_message):
     # Notify of import errors only one!
     if all(x != module for x in import_errors):
-        get_rabbit_sender().import_error({
-            'module': module,
-            'error': error_message
-        })
+        get_rabbit_sender().import_error(module=module, error=error_message)
 
         logger = logging.getLogger('grade-me')
         logger.info('[FAILED] Importing {}'.format(module).ljust(100))

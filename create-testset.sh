@@ -6,7 +6,7 @@
 
 VOLUME_NAME=$1-$3
 
-if docker volume inspect grademe_mongodb-data &>/dev/null
+if docker volume inspect $VOLUME_NAME &>/dev/null
 then
     while true; do
         read -p "Testet \"$VOLUME_NAME\" already exists, do you wish to re-create it? [y/n] " yn
