@@ -64,7 +64,7 @@ class MessageListener(object):
         return messages
 
     def json(self):
-        return [{'type': msgtype, **data} for msgtype, data in self.get()]
+        return [{'type': msgtype.value, **data} for msgtype, data in self.get()]
 
     def cleanup(self):
         MessageListener.__instance[self.queue] = None
