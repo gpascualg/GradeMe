@@ -1,9 +1,9 @@
-from gevent import subprocess, greenlet
-import gevent
 import os
 import json
 import threading
 import uwsgidecorators
+import subprocess
+import time
 
 from os.path import basename
 
@@ -38,17 +38,11 @@ class JobsOrchestrator(object, metaclass=Singleton):
         config = Database().get_config()
         self._oauth_token = config['oauth_token']
         self._stop = False
-        self._start = gevent.event.Event()
-
-        @uwsgidecorators.postfork
-        def once_forked():
-            self._start.set()
 
         if not os.environ.get('DISABLE_POOL'):
             for _ in range(config['parallel_jobs']):
-                ready = gevent.event.Event()
-                greenlet.Greenlet.spawn(self.update, ready)
-                ready.wait()
+                # TODO(gpascualg): Keep track of the thread to join later
+                threading.Thread(target=self.update).start()
 
     def __once_done(self, result):
         meta, log = result
@@ -93,15 +87,14 @@ class JobsOrchestrator(object, metaclass=Singleton):
     def handle(self, job):
         return self.__once_done(self.__process_job(job))
 
-    def update(self, ready):
-        ready.set()
-        self._start.wait()
+    def update(self):
+        # Wait for workers to spawn (to avoid PyMongo warnings...)
+        time.sleep(10)
 
         while not self._stop:
             job = Database().get_job()
             if job is not None:
                 self.handle(job)
 
-            gevent.sleep(0.1)
+            time.sleep(0.1)
 
-    
