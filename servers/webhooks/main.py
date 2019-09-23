@@ -3,6 +3,7 @@ from github import Github
 from ipaddress import ip_address, ip_network
 from multiprocessing.pool import ThreadPool
 
+import threading
 import argparse
 import logging
 import requests
@@ -14,7 +15,7 @@ from ..common.database import Database
 from ..common.logger import logger, setup_logger
 from .git.methods import GithubMethods
 from .cli.cli import GradeMeCLI
-from .jobs import Jobs
+from .jobs import JobsOrchestrator
 
 
 def setup_app_routes(app):
@@ -168,6 +169,9 @@ def main(return_app):
     logger.info('Rescheduling jobs')
     Database().reschedule_jobs()
 
+    # Start handling jobs
+    JobsOrchestrator()
+
     # Mocking purposes
     if args.github_fake_id:
         GithubMethods.MOCK_ORG_ID = args.github_fake_id[0]
@@ -181,9 +185,6 @@ def main(return_app):
 
     # Setup app and run it
     setup_app_routes(app)
-
-    # Execute jobs in the main worker/thread only
-    Jobs()
 
     if return_app:
         return app

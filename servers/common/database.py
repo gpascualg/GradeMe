@@ -7,6 +7,8 @@ import itertools
 import re
 import threading
 
+from ..docker.singleton import ThreadedSingleton
+
 
 CACHES = {}
 
@@ -32,23 +34,14 @@ def clear_caches():
     for key in CACHES:
         clear_cache(key)
 
-class Database(object):
-    __instance = {}
+class Database(object, metaclass=ThreadedSingleton):
     __host = None
 
     @staticmethod
     def initialize(host):
         Database.__host = host
     
-    def __new__(cls):
-        ident = threading.get_ident()
-        if Database.__instance.get(ident) is None:
-            Database.__instance[ident] = object.__new__(cls)
-            Database.__instance[ident].__init()
-
-        return Database.__instance[ident]
-
-    def __init(self):
+    def __init__(self):
         # Connect
         self.client = MongoClient(Database.__host)
         self.db = self.client.autograder

@@ -186,7 +186,6 @@ try:
             # Done, update info and rm
             update_instance(instance, 'done' if exit_code == 0 else 'execution-error', results.json())
             subprocess.call(['docker', 'rm', docker_id_or_false])
-            results.cleanup()
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")

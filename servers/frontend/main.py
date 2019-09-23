@@ -118,7 +118,7 @@ def main(return_app=False):
     # Start database
     Database.initialize(args.mongo_host)
 
-    # TODO(gpascualg): Move this somewhere else
+    # TODO(gpascualg): How will this play with multiple workers?
     messages = Queue()
     thread = Thread(target=listener, args=(messages,))
     thread.start()

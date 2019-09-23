@@ -5,33 +5,23 @@ from threading import Thread
 from queue import Queue
 
 from .message_type import MessageType
+from .singleton import ThreadedSingleton
 
 
-class MessageSender(object):
-    __instance = {}
-    
-    @staticmethod
-    def get(queue=None):
-        # This is not the most beautiful code out there
-        # If there is more than one instance running (or none), expect the unexpected
-        if queue is None:
-            ident = next(iter(MessageSender.__instance.keys()))
-        else:
-            ident = threading.get_ident()
-            ident = (ident, queue)
+class MessageSender(object, metaclass=ThreadedSingleton):
+    # @staticmethod
+    # def get(queue=None):
+    #     # This is not the most beautiful code out there
+    #     # If there is more than one instance running (or none), expect the unexpected
+    #     if queue is None:
+    #         ident = next(iter(MessageSender.__instance.keys()))
+    #     else:
+    #         ident = threading.get_ident()
+    #         ident = (ident, queue)
 
-        return MessageSender.__instance.get(ident)
+    #     return MessageSender.__instance.get(ident)
 
-    def __new__(cls, host, queue):
-        ident = threading.get_ident()
-        ident = (ident, queue)
-        if MessageSender.__instance.get(ident) is None:
-            MessageSender.__instance[ident] = object.__new__(cls)
-            MessageSender.__instance[ident].__init(host, queue)
-            
-        return MessageSender.__instance[ident]
-
-    def __init(self, host, queue):
+    def __init__(self, host, queue):
         # Save rabbit credentials
         with open('/run/secrets/RABBIT_USER') as fp:
             rabbit_username = fp.read().strip()
@@ -66,9 +56,7 @@ class MessageSender(object):
 
                 self.connection.sleep(0.1)
             except:
-                break
-
-        MessageSender.__instance[self.queue] = None        
+                break    
 
     def import_error(self, **data):
         self.send(MessageType.IMPORT_ERROR, data)

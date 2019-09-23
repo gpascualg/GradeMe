@@ -4,21 +4,12 @@ import threading
 from queue import Queue, Empty
 
 from .message_type import MessageType
+from .singleton import ThreadedSingleton
 
 
-class MessageListener(object):
-    __instance = {}
-    
-    def __new__(cls, host, queue, messages=None):
-        ident = threading.get_ident()
-        ident = (ident, queue)
-        if MessageListener.__instance.get(ident) is None:
-            MessageListener.__instance[ident] = object.__new__(cls)
-            MessageListener.__instance[ident].__init(host, queue, messages)
-            
-        return MessageListener.__instance[ident]
 
-    def __init(self, host, queue, messages=None):
+class MessageListener(object, metaclass=ThreadedSingleton):
+    def __init__(self, host, queue, messages=None):
         with open('/run/secrets/RABBIT_USER') as fp:
             rabbit_username = fp.read().strip()
         with open('/run/secrets/RABBIT_PASS') as fp:
@@ -69,6 +60,3 @@ class MessageListener(object):
 
     def json(self):
         return [{'type': msgtype.value, **data} for msgtype, data in self.get()]
-
-    def cleanup(self):
-        MessageListener.__instance[self.queue] = None
