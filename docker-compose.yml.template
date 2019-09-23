@@ -41,7 +41,7 @@ services:
       - secrets-simulator
     networks:
       - backend
-    command: --http :80 --gevent 1000 --master --wsgi-file /opt/start_frontend.py --callable app --pyargv "--mongo-host=mongo"
+    command: --http :80 --gevent 1000 --http-websockets --master --wsgi-file /opt/start_frontend.py --callable app --pyargv "--mongo-host=mongo"
 
   mongo:
     image: "mongo:3.4"
