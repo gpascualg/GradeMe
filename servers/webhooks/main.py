@@ -74,7 +74,7 @@ def setup_app_routes(app):
             logger.exception("Fatal error in main loop")
             abort(500)
 
-def main():
+def main(return_app):
     # New organizations to use
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--github-api-key', help='API key for the master user')
@@ -175,4 +175,8 @@ def main():
 
     # Setup app and run it
     setup_app_routes(app)
+
+    if return_app:
+        return app
+
     app.run(host=args.host, port=args.port, debug=args.debug)

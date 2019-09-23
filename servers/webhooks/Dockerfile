@@ -10,4 +10,4 @@ RUN apk --update add --no-cache python3 py3-pip docker && \
 ADD . /code
 WORKDIR /code
 
-ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "python3", "-u", "start_service.py"]
+ENTRYPOINT ["./wait-for", "rabbit:5672", "--", "uwsgi"]

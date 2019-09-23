@@ -24,7 +24,7 @@ services:
       - secrets-simulator
     networks:
       - backend
-    command: --no-cli --github-fake-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=mongo --host=0.0.0.0 --port=80
+    command: --http :80 --gevent 1000 --master --wsgi-file /opt/start_service.py --callable app --pyargv "--no-cli --github-fake-id 123 --no-github-init --github-api-key=231af25d0 --github-org=TNUI-UB --mongo-host=mongo"
 
   frontend:
     build:
@@ -41,7 +41,7 @@ services:
       - secrets-simulator
     networks:
       - backend
-    command: --mongo-host=mongo --host=0.0.0.0 --port=80
+    command: --http :80 --gevent 1000 --master --wsgi-file /opt/start_frontend.py --callable app --pyargv "--mongo-host=mongo"
 
   mongo:
     image: "mongo:3.4"

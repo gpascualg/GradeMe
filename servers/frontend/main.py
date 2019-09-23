@@ -105,7 +105,7 @@ def listener(messages):
     results = MessageListener('rabbit', 'jobs', messages)
     results.run()
 
-def main():
+def main(return_app=False):
     parser = argparse.ArgumentParser(description='Classroom AutoGrader')
     parser.add_argument('--github-client-id', help='Github client id for logins')
     parser.add_argument('--github-client-secret', help='Github client secret for logins')
@@ -139,6 +139,10 @@ def main():
     github = GitHub(app)
 
     setup_app_routes(app, github, socketio, args.debug)
+
+    if return_app:
+        return app
+
     socketio.run(app, host=args.host, port=args.port, debug=args.debug)
     thread.join()
     
