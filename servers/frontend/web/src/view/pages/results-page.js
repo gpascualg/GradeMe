@@ -127,37 +127,55 @@ export default function() {
                 <Grid key='grid' justify="center">
                     { instance === null || instance.results.length == 0 && <Col span={ 12 }><div className={ 'section-header center' }>There are no tests</div></Col> }
                     { instance.results.map((section) => {
-                        return <Col key={ section.name } span={ 12 }>
-                            <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
-                                { section.header }
-                                <div className={ 'timestamp' }>
-                                    { printable_score(section.score.public, "<hidden>", "[", "]") }
+                        return section.type === 0 ? (
+                            <Col key={ section.name } span={ 12 }>
+                                <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
+                                    { 'Import error: ' + test.module }
                                 </div>
-                                <div className={ 'timestamp' }>
-                                    { printable_score(section.score.private, "", " · [", "]") }
+                                <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
+                                    <Col key={ section.name + '/tests/' + i } span={ 12 }>
+                                        <div className={ 'color-red test-header' }>
+                                            <span className={ 'test-name' }>{ test.error }</span>
+                                            <div className={ 'timestamp' }>
+                                                { test_score(test.score, test.max_score) }
+                                            </div>
+                                        </div>
+                                    </Col>
+                                </Grid>
+                            </Col>
+                        ) : (
+                            <Col key={ section.name } span={ 12 }>
+                                <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
+                                    { section.header }
+                                    <div className={ 'timestamp' }>
+                                        { printable_score(section.score.public, "<hidden>", "[", "]") }
+                                    </div>
+                                    <div className={ 'timestamp' }>
+                                        { printable_score(section.score.private, "", " · [", "]") }
+                                    </div>
                                 </div>
-                            </div>
-                            <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
-                                {
-                                    section.tests.map((test, i) => {
-                                        return <Col key={ section.name + '/tests/' + i } span={ 12 }>
-                                            <div className={ color_from_result(test.score, test.max_score) + ' test-header' }>
-                                                <span className={ 'test-name' }>{ test.name }</span>
-                                                <div className={ 'timestamp' }>
-                                                    { test_score(test.score, test.max_score) }
+                                <Grid key={ section.name + '/tests' } className={ 'tests-section' } style={ { 'max-height': section.height || '1000px' } }>
+                                    {
+                                        section.tests.map((test, i) => {
+                                            return <Col key={ section.name + '/tests/' + i } span={ 12 }>
+                                                <div className={ color_from_result(test.score, test.max_score) + ' test-header' }>
+                                                    <span className={ 'test-name' }>{ test.name }</span>
+                                                    <div className={ 'timestamp' }>
+                                                        { test_score(test.score, test.max_score) }
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className={ 'inner-test' }>
-                                                <div className={ 'test-desc' }>{ test.desc }</div>
-                                                <div className={ 'test-details' }>{ test.details }</div>
-                                                <div className={ 'test-failure' }>{ test.failure_reason }</div>
-                                                <div className={ 'test-hint' }>{ test.hint }</div>
-                                            </div>
-                                        </Col>
-                                    })
-                                }
-                            </Grid>
-                        </Col>;
+                                                <div className={ 'inner-test' }>
+                                                    <div className={ 'test-desc' }>{ test.desc }</div>
+                                                    <div className={ 'test-details' }>{ test.details }</div>
+                                                    <div className={ 'test-failure' }>{ test.failure_reason }</div>
+                                                    <div className={ 'test-hint' }>{ test.hint }</div>
+                                                </div>
+                                            </Col>
+                                        })
+                                    }
+                                </Grid>
+                            </Col>
+                        );
                     }) }
                 </Grid>,
             ];

@@ -575,6 +575,11 @@ def calc_score(results, is_admin):
     total = 0
 
     for section in results:
+        if 'score' not in section:
+            # It is an import error
+            # TODO(gpascualg): If type!=1
+            continue
+        
         obj = section['score']['private' if is_admin else 'public']['numeric']
         score += obj['score']
         total += obj['total']
