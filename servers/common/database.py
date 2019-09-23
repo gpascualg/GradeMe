@@ -263,7 +263,7 @@ class Database(object):
             {'orgs' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
-        orgs_where_admin = [org['_id'] for org in orgs_where_admin['orgs'] if org['admin']]
+        orgs_where_admin = [org['id'] for org in orgs_where_admin['orgs'] if org['admin']]
         
         search_query = {
             '$or': 
