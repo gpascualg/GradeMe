@@ -524,7 +524,7 @@ class Database(object):
         )
 
     def get_job(self):
-        self.jobs.find_one_and_update(
+        return self.jobs.find_one_and_update(
             {'status': 'pending'},
             {'$set': {'status': 'processing'}},
             sort=[('timestamp', 1)]
