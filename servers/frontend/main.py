@@ -9,6 +9,7 @@ import argparse
 import json
 import math
 import os
+import uwsgidecorators
 
 from ..common.database import Database
 from ..docker.listener import MessageListener
@@ -126,22 +127,25 @@ def main(return_app=False):
     app = Flask(__name__)
     app.config['GITHUB_CLIENT_ID'] = args.github_client_id
     app.config['GITHUB_CLIENT_SECRET'] = args.github_client_secret
-    app.config['SESSION_TYPE'] = 'mongodb'
-    app.config['SESSION_MONGODB'] = Database().client
     app.config['CORS_HEADERS'] = 'Content-Type'
+
+    @uwsgidecorators.postfork
+    def setup_session_db():
+        app.config['SESSION_TYPE'] = 'mongodb'
+        app.config['SESSION_MONGODB'] = Database().client
+        Session(app)
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     app.config['STATIC_FOLDER'] = os.path.join(dir_path, 'static')
 
     CORS(app)
-    Session(app)
     socketio = SocketIO(app, manage_session=False)
     github = GitHub(app)
 
     setup_app_routes(app, github, socketio, args.debug)
 
     Database.reset()
-    
+
     if return_app:
         return app
 
