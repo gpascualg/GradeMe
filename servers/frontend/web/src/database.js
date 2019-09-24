@@ -14,7 +14,7 @@ function upsert(db, col, query, data) {
         db.collection(col).findOne(query).then((doc) => {
             if (doc) {
                 db.collection(col)
-                    .update(query, data)
+                    .update(query, {$set: data})
                     .finally(() => resolve());
             }
             else {
