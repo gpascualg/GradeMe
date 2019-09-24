@@ -605,19 +605,21 @@ def parse_instances(user, user_repos, filter_out=('log',)):
 # Filter results if not admin
 def filter_results(results):
     for section in results:
-        del section['score']['private'] # No private
+        if 'score' in section:
+            del section['score']['private'] # No private
 
-        public_tests = [test for test in section['tests'] if test['public']]
+        if 'tests' in section:
+            public_tests = [test for test in section['tests'] if test['public']]
 
-        for test in public_tests:
-            if not test['is_score_public']:
-                del test['score']
-                del test['max_score'] # Should we make it public?
+            for test in public_tests:
+                if not test['is_score_public']:
+                    del test['score']
+                    del test['max_score'] # Should we make it public?
 
-            if test['hide_details']:
-                del test['details']
-            
-        section['tests'] = public_tests
+                if test['hide_details']:
+                    del test['details']
+                
+            section['tests'] = public_tests
 
 def calc_score(results, is_admin):
     score = 0
