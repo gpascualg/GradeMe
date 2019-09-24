@@ -1,6 +1,6 @@
 import { Col, Grid, Input, Icon, Icons } from 'construct-ui';
 import { route } from '../components/helper';
-import { onceDBReady, fetch, update } from '../../database';
+import { db, upsert } from '../../database';
 
 function color_from_status(status) {
     return 'color-' + ((status) => {
@@ -68,17 +68,14 @@ function printable_users(access_rights) {
 }
 
 function setroute(e, repo, ist) {
-    route('/results/' + repo._id.org + '/' + repo._id.repo + '/' + ist.hash);
+    route('/results/' + repo.id.org + '/' + repo.id.repo + '/' + ist.hash);
 }
 
 function search(e) {
     var search = e.srcElement.value;
 
-    onceDBReady.then((db) => {
-        update(db, 'data', {'key': 'search', 'value': search}).then((res) => {
-            route('/index');
-        });
-    });
+    upsert(db, 'data', {key: 'search'}, {key: 'search', value: search})
+        .then(() => route('/index'));
 
     return search;
 }

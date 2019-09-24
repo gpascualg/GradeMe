@@ -10,7 +10,7 @@ import LoginPage from './pages/login-page';
 import ResultsPage from './pages/results-page'
 
 // Database
-import { onceDBReady, fetch } from '../database';
+import { db, upsert } from '../database';
 
 // Websockets
 import io from 'socket.io-client';
@@ -27,15 +27,13 @@ function lazyLoad(page, dataLoader) {
             // Show Loader until the promise has been resolved or rejected.
             m.render($root, m(PageLayout, m(Splash))); 
 
-            return onceDBReady.then((db) => {
-                let loadingPromise = new Promise((resolve, reject) => {
-                    dataLoader(resolve, reject, db, params);
-                }).then(v => v, v => v).catch((/* e */) => {
-                    // In case of server error we can show the maintenance page.
-                    return MaintenancePage;
-                });
-                return loadingPromise;
+            let loadingPromise = new Promise((resolve, reject) => {
+                dataLoader(resolve, reject, db, params);
+            }).then(v => v, v => v).catch((/* e */) => {
+                // In case of server error we can show the maintenance page.
+                return MaintenancePage;
             });
+            return loadingPromise;
         },
         render(vnode) {
             if (vnode.tag == MaintenancePage || vnode.tag == LoginPage) {
@@ -62,6 +60,7 @@ let onceSocketReady = new Promise((resolve) => {
     });
 });
 
+
 const Routes = {
     '/splash': {
         render: function() {
@@ -73,7 +72,7 @@ const Routes = {
             return m(PageLayout, m(LoginPage));
         },
     },
-    '/results/:org/:repo/:hash' : lazyLoad(ResultsPage, (resolve, reject, db, params) => {
+    '/results/:org/:repo/:hash' : lazyLoad(ResultsPage, (resolve, reject, db, params) => {        
         onceSocketReady.then(([socket, user_information]) => {
             if (user_information != null) {
                 socket.once('instance-result', (repo) => {
@@ -97,31 +96,51 @@ const Routes = {
         });
     }),
     '/index': lazyLoad(IndexPage, (resolve, reject, db) => {
-        onceSocketReady.then(([socket, user_information]) => {
-            if (user_information != null) {
-                fetch(db, 'data').then((data) => {
+        db.collection('data').find().toArray((error, docs) => {
+            onceSocketReady.then(([socket, user_information]) => {
+                if (user_information != null) {
                     var config = {}
-                    for (let i = 0; i < data.length; ++i) {
-                        config[data[i].key] = data[i].value;
+                    for (let i = 0; i < docs.length; ++i) {
+                        config[docs[i].key] = docs[i].value;
                     }
+    
+                    socket.once('user-instances', (repos) => {
+                        // Do we need to update last?
+                        if (repos && repos.length && repos[0].instances.length) {
+                            let timestamp = repos[0].instances[0].length;
+                            upsert(db, 'data', {key: 'last'}, {key: 'last', value: timestamp});
+                        }
 
-                    socket.once('user-instances', (instances) => {
-                        resolve(() => {
-                            return {
-                                'repos': instances,
-                                'user': user_information,
-                                'config': config
-                            }
-                        });
+                        // Either update or save repos
+                        for (let i = 0; i < repos.length; ++i) {
+                            repos[i].id = repos[i]._id;
+                            delete repos[i]._id;
+
+                            upsert(db, 'repos', {id: repos[i][id]}, repos[i]);
+                        }
+
+                        // Fetch from local storage
+                        db.collection('repos')
+                            .find()
+                            .sort({'instances.0.timestamp': -1})
+                            .toArray((error, docs) => {
+                                resolve(() => {
+                                    return {
+                                        'repos': docs,
+                                        'user': user_information,
+                                        'config': config
+                                    }
+                                });
+                            });
                     });
-
+    
                     socket.emit('fetch-instances', config.search || null);
-                });
-            } 
-            else {
-                reject(LoginPage);
-            }
-        });
+                } 
+                else {
+                    reject(LoginPage);
+                }
+            });
+        })
     }),
 };
 
