@@ -144,17 +144,14 @@ export default function() {
                     { instance === null || instance.results.length == 0 && <Col span={ 12 }><div className={ 'section-header center' }>There are no tests</div></Col> }
                     { instance.results.map((section) => {
                         return section.type === 0 ? (
-                            <Col key={ section.name } span={ 12 }>
+                            <Col key={ 'import-error/' + section.module } span={ 12 }>
                                 <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
-                                    { 'Import error: ' + test.module }
+                                    { 'Import error: ' + section.module }
                                 </div>
                                 <Grid key={ section.name + '/tests' } className={ 'tests-section' }>
                                     <Col key={ section.name + '/tests/' + i } span={ 12 }>
                                         <div className={ 'color-red test-header' }>
-                                            <span className={ 'test-name' }>{ test.error }</span>
-                                            <div className={ 'timestamp' }>
-                                                { test_score(test.score, test.max_score) }
-                                            </div>
+                                            <span className={ 'test-name' }>{ section.error }</span>
                                         </div>
                                     </Col>
                                 </Grid>
