@@ -257,7 +257,7 @@ class Database(object, metaclass=ThreadedSingleton):
             }
         )
 
-    def user_instances(self, user, search):
+    def user_instances(self, user, search, last):
         orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
             {'orgs' : 1}
@@ -284,6 +284,16 @@ class Database(object, metaclass=ThreadedSingleton):
                     search_query,
                     {
                         'access_rights.id': user_id['_id']
+                    }
+                ]
+            }
+        else:
+            # Do not use last if using a search query
+            search_query = {
+                '$and': [
+                    search_query,
+                    {
+                        'instances.0.timestamp' : {'$gt': last}
                     }
                 ]
             }
