@@ -136,6 +136,7 @@ const Routes = {
                                 db.collection('repos')
                                     .find()
                                     .sort({'instances.0.timestamp': -1})
+                                    .limit(10)
                                     .toArray((error, docs) => {
                                         resolve(() => {
                                             return {
