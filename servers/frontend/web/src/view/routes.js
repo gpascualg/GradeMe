@@ -125,9 +125,6 @@ const Routes = {
 
                             // Either update or save repos
                             for (let i = 0; i < repos.length; ++i) {
-                                repos[i].id = repos[i]._id;
-                                delete repos[i]._id;
-
                                 promises.push(upsert(db, 'repos', {id: repos[i]['id']}, repos[i]));
                             }
 
