@@ -10,19 +10,36 @@ var onceDBReady = new Promise((resolve) => {
         console.log('UPGRADE');
         var db = event.target.result;
       
+        function create_tests_store() {
+            // TODO(gpascualg): Is this the most efficient way to store tests?
+            var testsStore = db.createObjectStore('tests', { keyPath: 'id' });
+            testsStore.createIndex('hash', 'hash', { unique: true });
+        }
+
+        function create_data_store() {    
+            // Other data
+            var dataStore = db.createObjectStore('data', { keyPath: 'key' });
+            dataStore.createIndex('value', 'value', { unique: false });
+
+            dataStore.transaction.oncomplete = (/* event */) => {
+                var objectStore = db.transaction('data', 'readwrite').objectStore('data');
+                objectStore.add({key: 'search', value: null});
+            };
+        }
+
+        // Upgrade as needed
+        switch(db.version) {
+            case 0:
+                create_tests_store();
+                create_data_store();
+                break;
+
+            case 1:
+            case 2:
+                create_data_store();
+                break;
+        }
         // Tests already fetched so far
-        // TODO(gpascualg): Is this the most efficient way to store tests?
-        var testsStore = db.createObjectStore('tests', { keyPath: 'id' });
-        testsStore.createIndex('hash', 'hash', { unique: true });
-
-        testsStore.transaction.oncomplete = (/* event */) => {
-            var objectStore = db.transaction('data', 'readwrite').objectStore('data');
-            objectStore.add({key: 'search', value: null});
-        };
-
-        // Other data
-        var dataStore = db.createObjectStore('data', { keyPath: 'key' });
-        dataStore.createIndex('value', 'value', { unique: false });
     };
 });
 
