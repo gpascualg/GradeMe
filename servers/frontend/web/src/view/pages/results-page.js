@@ -148,8 +148,8 @@ export default function() {
                                 <div className={ 'section-header' } onclick={ (e) => toggle(e, section) }>
                                     { 'Import error: ' + section.module }
                                 </div>
-                                <Grid key={ section.name + '/tests' } className={ 'tests-section' }>
-                                    <Col key={ section.name + '/tests/' + i } span={ 12 }>
+                                <Grid className={ 'tests-section' }>
+                                    <Col span={ 12 }>
                                         <div className={ 'color-red test-header' }>
                                             <span className={ 'test-name' }>{ section.error }</span>
                                         </div>
