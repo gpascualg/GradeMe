@@ -119,7 +119,7 @@ const Routes = {
                             // We are only 
                             // Do we need to update last?
                             if (repos && repos.length && repos[0].instances.length) {
-                                let timestamp = repos[0].instances[0].length;
+                                let timestamp = repos[0].instances[0].timestamp;
                                 promises.push(upsert(db, 'data', {key: 'last'}, {key: 'last', value: timestamp}));
                             }
 
