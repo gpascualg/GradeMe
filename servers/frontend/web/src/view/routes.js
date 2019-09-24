@@ -104,37 +104,62 @@ const Routes = {
                         config[docs[i].key] = docs[i].value;
                     }
     
-                    socket.once('user-instances', (repos) => {
-                        // Do we need to update last?
-                        if (repos && repos.length && repos[0].instances.length) {
-                            let timestamp = repos[0].instances[0].length;
-                            upsert(db, 'data', {key: 'last'}, {key: 'last', value: timestamp});
-                        }
-
-                        // Either update or save repos
+                    socket.once('user-repos', (repos) => {
+                        // Change _id to id, to work with zango
                         for (let i = 0; i < repos.length; ++i) {
                             repos[i].id = repos[i]._id;
                             delete repos[i]._id;
-
-                            upsert(db, 'repos', {id: repos[i][id]}, repos[i]);
                         }
 
-                        // Fetch from local storage
-                        db.collection('repos')
-                            .find()
-                            .sort({'instances.0.timestamp': -1})
-                            .toArray((error, docs) => {
-                                resolve(() => {
-                                    return {
-                                        'repos': docs,
-                                        'user': user_information,
-                                        'config': config
-                                    }
-                                });
+                        // Only update inner storage if search query is empty
+                        if (!config.search || !config.search.length)
+                        {
+                            let promises = []
+
+                            // We are only 
+                            // Do we need to update last?
+                            if (repos && repos.length && repos[0].instances.length) {
+                                let timestamp = repos[0].instances[0].length;
+                                promises.push(upsert(db, 'data', {key: 'last'}, {key: 'last', value: timestamp}));
+                            }
+
+                            // Either update or save repos
+                            for (let i = 0; i < repos.length; ++i) {
+                                repos[i].id = repos[i]._id;
+                                delete repos[i]._id;
+
+                                promises.push(upsert(db, 'repos', {id: repos[i]['id']}, repos[i]));
+                            }
+
+                            // Fetch from local storage once it is updated
+                            Promise.all(promises).then(() => {
+                                db.collection('repos')
+                                    .find()
+                                    .sort({'instances.0.timestamp': -1})
+                                    .toArray((error, docs) => {
+                                        resolve(() => {
+                                            return {
+                                                'repos': docs,
+                                                'user': user_information,
+                                                'config': config
+                                            }
+                                        });
+                                    });
                             });
+                        }
+                        else {
+                            // Otherwise, simply show results as obtained
+                            resolve(() => {
+                                return {
+                                    'repos': repos,
+                                    'user': user_information,
+                                    'config': config
+                                }
+                            });
+                        }
                     });
     
-                    socket.emit('fetch-instances', config.search || null);
+                    socket.emit('fetch-repos', config.search || null, config.last || 0);
                 } 
                 else {
                     reject(LoginPage);
