@@ -28,22 +28,18 @@ function color_from_status(status) {
     })(status);
 }
 
-function color_from_result(score, total) {
-    return 'color-' + ((score, total) => {
+function color_from_result(score, total, result) {
+    return 'color-' + ((score, total, result) => {
         if (typeof score === 'undefined' || typeof total == 'undefined') {
             return 'gray';
         }
 
-        if (score == 0 && total != 0) {
-            return 'red';
-        }
-
         if (score < total) {
-            return 'orange';
+            return result ? 'orange' : 'red';
         }
 
         return 'green';
-    })(score, total);
+    })(score, total, result);
 }
 
 function printable_date(timestamp) {
@@ -178,19 +174,21 @@ export default function() {
                                     {
                                         section.tests.map((test, i) => {
                                             return <Col key={ section.name + '/tests/' + i } span={ 12 }>
-                                                <div className={ color_from_result(test.score, test.max_score) + ' test-header' }>
+                                                <div className={ color_from_result(test.score, test.max_score, test.result) + ' test-header' }>
                                                     <span className={ 'test-name bold' }>{ test.name }</span>
                                                     { test.desc && <span> - { test.desc }</span> }
                                                     <div className={ 'timestamp' }>
                                                         { test_score(test.score, test.max_score) }
                                                     </div>
                                                 </div>
-                                                { !test.result && 
+                                                { !test.result || (test.score != test.max_score) && 
                                                     <div className={ 'inner-test' }>
                                                         { test.details != 'None' && 
                                                             <div className={ 'test-details' }>{ test.details }</div> 
                                                         }
-                                                        <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
+                                                        { !test.result &&
+                                                            <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
+                                                        }
                                                         { test.failure_reason != 'NotImplementedError' && 
                                                             <div className={ 'test-hint' }>{ test.hint }</div> 
                                                         }
