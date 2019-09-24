@@ -140,6 +140,8 @@ def main(return_app=False):
 
     setup_app_routes(app, github, socketio, args.debug)
 
+    Database.reset()
+    
     if return_app:
         return app
 
