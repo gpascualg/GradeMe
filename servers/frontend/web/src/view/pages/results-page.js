@@ -181,7 +181,7 @@ export default function() {
                                                         { test_score(test.score, test.max_score) }
                                                     </div>
                                                 </div>
-                                                { !test.result || (test.score != test.max_score) && 
+                                                { (!test.result || (test.score != test.max_score)) && 
                                                     <div className={ 'inner-test' }>
                                                         { test.details != 'None' && 
                                                             <div className={ 'test-details' }>{ test.details }</div> 
