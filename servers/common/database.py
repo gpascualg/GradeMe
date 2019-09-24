@@ -347,17 +347,19 @@ class Database(object, metaclass=ThreadedSingleton):
     def create_repository(self, org, repo, name, pusher):
         # Search if repo has any team
         access_rights = []
+        is_admin = pusher in self.get_organization_admins(org)
+        permission = 'admin' if is_admin else 'member'
 
         for team in self.get_teams(org, repo):
             for username in team['users']:
                 access_rights.append({
                     'id': username,
-                    'permission': 'member'
+                    'permission': permission
                 })
 
         # Always add pusher
         if all(p['id'] != pusher for p in access_rights):
-            access_rights = [{'id': pusher, 'permission': 'member'}]
+            access_rights = [{'id': pusher, 'permission': permission}]
 
         self.repos.insert_one(
             {
