@@ -159,7 +159,10 @@ const Routes = {
                         }
                     });
     
-                    socket.emit('fetch-repos', config.search || null, config.last || 0);
+                    socket.emit('fetch-repos', { 
+                        search: config.search || null,
+                        last: config.last || 0
+                    });
                 } 
                 else {
                     reject(LoginPage);
