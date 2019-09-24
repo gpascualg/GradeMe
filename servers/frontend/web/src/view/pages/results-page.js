@@ -185,11 +185,17 @@ export default function() {
                                                         { test_score(test.score, test.max_score) }
                                                     </div>
                                                 </div>
-                                                <div className={ 'inner-test' }>
-                                                    { test.details != 'None' && <div className={ 'test-details' }>{ test.details }</div> }
-                                                    <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
-                                                    <div className={ 'test-hint' }>{ test.hint }</div>
-                                                </div>
+                                                { !test.result && 
+                                                    <div className={ 'inner-test' }>
+                                                        { test.details != 'None' && 
+                                                            <div className={ 'test-details' }>{ test.details }</div> 
+                                                        }
+                                                        <div className={ 'test-failure' }>{ printable_failure(test.failure_reason) }</div>
+                                                        { test.failure_reason != 'NotImplementedError' && 
+                                                            <div className={ 'test-hint' }>{ test.hint }</div> 
+                                                        }
+                                                    </div> 
+                                                }
                                             </Col>
                                         })
                                     }
