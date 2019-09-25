@@ -72,7 +72,7 @@ const Routes = {
             return m(PageLayout, m(LoginPage));
         },
     },
-    '/results/:org/:repo/:hash' : lazyLoad(ResultsPage, (resolve, reject, db, params) => {        
+    '/results/:org/:repo/:branch/:hash' : lazyLoad(ResultsPage, (resolve, reject, db, params) => {        
         onceSocketReady.then(([socket, user_information]) => {
             if (user_information != null) {
                 socket.once('instance-result', (repo) => {
@@ -87,6 +87,7 @@ const Routes = {
                 socket.emit('fetch-instance-result', {
                     'org': parseInt(params.org), 
                     'repo': parseInt(params.repo), 
+                    'branch': params.branch,
                     'hash': params.hash
                 });
             } 

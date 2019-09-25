@@ -312,7 +312,7 @@ class Database(object, metaclass=ThreadedSingleton):
 
         return list(parse_instances(user, user_repos, filter_out=('log', 'results')))
 
-    def instance_result(self, user, org, repo, hash):
+    def instance_result(self, user, org, repo, branch, hash):
         orgs_where_admin = self.users.find_one(
             {'_id' : user, 'orgs.admin' : True},
             {'orgs' : 1}
@@ -334,6 +334,7 @@ class Database(object, metaclass=ThreadedSingleton):
                     {
                         '_id.org': org,
                         '_id.repo': repo,
+                        'instances.branch': branch,
                         'instances.hash' : hash
                     }
                 ]

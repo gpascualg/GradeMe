@@ -68,7 +68,7 @@ function printable_users(access_rights) {
 }
 
 function setroute(e, repo, ist) {
-    route('/results/' + repo.id.org + '/' + repo.id.repo + '/' + ist.hash);
+    route('/results/' + repo.id.org + '/' + repo.id.repo + '/' + ist.branch + '/' + ist.hash);
 }
 
 function search(e) {
@@ -121,7 +121,7 @@ export default function() {
                             <Grid key={ repo.org_name + '/' + repo.name + '/instances' } style={ { 'max-height': repo.height || '1000px' } }>
                                 {
                                     repo.instances.map((ist) => {
-                                        return <Col key={ ist.hash } span={ 12 }>
+                                        return <Col key={ ist.branch + '/' + ist.hash } span={ 12 }>
                                             <div className={ color_from_status(ist.status) } onclick={ ((repo, ist) => (e) => setroute(e, repo, ist))(repo, ist) }>
                                                 { !is_failed(ist.status) && 
                                                     <span className={ 'bold' }>[{ ist.score }/{ ist.total }] </span>

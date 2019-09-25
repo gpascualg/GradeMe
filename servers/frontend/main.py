@@ -100,7 +100,7 @@ def setup_app_routes(app, github, socketio, debug):
             emit('instance-result', None)
         else:
             emit('instance-result', Database().instance_result(
-                g.user['_id'], request['org'], request['repo'], request['hash']))
+                g.user['_id'], request['org'], request['repo'], request['branch'], request['hash']))
 
 def listener(messages):
     results = MessageListener('rabbit', 'jobs', messages)
