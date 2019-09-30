@@ -334,8 +334,12 @@ class Database(object, metaclass=ThreadedSingleton):
                     {
                         '_id.org': org,
                         '_id.repo': repo,
-                        'instances.branch': branch,
-                        'instances.hash' : hash
+                        'instances': {
+                            '$elemMatch': {
+                                'branch': branch,
+                                'hash': hash
+                            }
+                        }
                     }
                 ]
             },
