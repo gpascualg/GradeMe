@@ -199,6 +199,7 @@ try:
             execution_msg = 'execution-error' if exit_code >= len(exit_code_as_message) else exit_code_as_message[exit_code]
             update_instance(instance, execution_msg, results.json())
             subprocess.call(['docker', 'rm', docker_id_or_false])
+            exitcode = 0
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")
