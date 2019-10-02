@@ -524,7 +524,8 @@ class Database(object, metaclass=ThreadedSingleton):
                 {
                     'org': meta['org']['id'],
                     'repo': meta['repo']['id'],
-                    'hash': meta['hash']
+                    'hash': meta['hash'],
+                    'branch': meta['branch']
                 },
                 **meta,
                 'timestamp': int(datetime.timestamp(datetime.now())),
@@ -546,7 +547,8 @@ class Database(object, metaclass=ThreadedSingleton):
                 {
                     'org': meta['org']['id'],
                     'repo': meta['repo']['id'],
-                    'hash': meta['hash']
+                    'hash': meta['hash'],
+                    'branch': meta['branch']
                 }
             }
         )
