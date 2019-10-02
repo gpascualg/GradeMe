@@ -175,6 +175,7 @@ class Database(object, metaclass=ThreadedSingleton):
                             permission: True
                         }
                     ],
+                    'teams': [],
                     'oauth': ''
                 }
             )
@@ -224,9 +225,15 @@ class Database(object, metaclass=ThreadedSingleton):
             'permissions': []
         })
 
+    def remove_team(self, org, team):
+        self.teams.delete_one({
+            '_id.org': org,
+            '_id.team': team
+        })
+
     def add_team_member(self, org, team, member):
         self.teams.update(
-            {'_id.org': org, '_id.team': team},
+            {'_id.org' : org, '_id.team': team},
             {
                 '$addToSet':
                 {
@@ -235,9 +242,23 @@ class Database(object, metaclass=ThreadedSingleton):
             }
         )
 
+        self.users.update_one(
+            {'_id': member},
+            {
+                '$addToSet': 
+                {
+                    'teams': 
+                    {
+                        'org': org,
+                        'team': team
+                    }
+                }
+            }
+        )
+
     def remove_team_member(self, org, team, member):
-        self.teams.update(
-            {'_id.org': org, '_id.team': team},
+        self.teams.update_one(
+            {'_id.org' : org, '_id.team': team},
             {
                 '$pull':
                 {
@@ -247,8 +268,8 @@ class Database(object, metaclass=ThreadedSingleton):
         )
 
     def add_team_permission(self, org, team, repo):
-        self.teams.update(
-            {'_id.org': org, '_id.team': team},
+        self.teams.update_one(
+            {'_id.org' : org, '_id.team': team},
             {
                 '$addToSet':
                 {
@@ -257,9 +278,19 @@ class Database(object, metaclass=ThreadedSingleton):
             }
         )
 
+        self.repos.update_one(
+            {'_id.org' : org, '_id.repo': repo},
+            {
+                '$addToSet':
+                {
+                    'teams': team
+                }
+            }
+        )
+
     def user_instances(self, user, search, last):
         orgs_where_admin = self.users.find_one(
-            {'_id' : user, 'orgs.admin' : True},
+            {'_id' : user['_id'], 'orgs.admin' : True},
             {'orgs' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
@@ -268,8 +299,9 @@ class Database(object, metaclass=ThreadedSingleton):
         search_query = {
             '$or': 
             [
-                { 'access_rights.id': user },
-                *[{ '_id.org' : x } for x in orgs_where_admin]
+                { 'access_rights.id': user['_id'] },
+                *[{'_id.org': x} for x in orgs_where_admin],
+                *[{'_id.org': t['org'], 'teams': t['team']} for t in user['teams']]
             ]
         }
 
@@ -314,7 +346,7 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def instance_result(self, user, org, repo, branch, hash):
         orgs_where_admin = self.users.find_one(
-            {'_id' : user, 'orgs.admin' : True},
+            {'_id' : user['_id'], 'orgs.admin' : True},
             {'orgs' : 1}
         )
         orgs_where_admin = orgs_where_admin or {'orgs': []}
@@ -327,15 +359,20 @@ class Database(object, metaclass=ThreadedSingleton):
                     {
                         '$or': 
                         [
-                            { 'access_rights.id': user },
-                            *[{ '_id.org' : x } for x in orgs_where_admin]
+                            { 'access_rights.id': user['_id'] },
+                            *[{ '_id.org' : x } for x in orgs_where_admin],
+                            *[{'_id.org': t['org'], 'teams': t['team']} for t in user['teams']]
                         ]
                     },
                     {
                         '_id.org': org,
                         '_id.repo': repo,
-                        'instances.branch': branch,
-                        'instances.hash' : hash
+                        'instances': {
+                            '$elemMatch': {
+                                'branch': branch,
+                                'hash': hash
+                            }
+                        }
                     }
                 ]
             },
@@ -348,9 +385,9 @@ class Database(object, metaclass=ThreadedSingleton):
         )
 
         if instance:
-            instance = next(parse_instances(user, [instance], filter_out=('log')))
+            instance = next(parse_instances(user['_id'], [instance], filter_out=('log')))
 
-            if user not in self.get_organization_admins(org):
+            if user['_id'] not in self.get_organization_admins(org):
                 filter_results(instance['instances'][0]['results'])
 
         return instance
@@ -381,6 +418,7 @@ class Database(object, metaclass=ThreadedSingleton):
                 },
                 'name': name,
                 'access_rights': access_rights,
+                'teams': [],
                 'instances': [],
                 'daily_usage': {}
             }
@@ -408,7 +446,10 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def add_member_to_repo(self, org, repo, member):
         self.repos.update(
-            {'_id.org': org, '_id.repo': repo},
+            {
+                '_id.org': org,
+                '_id.repo': repo
+            },
             {
                 '$addToSet':
                 {
@@ -419,7 +460,10 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def remove_member_from_repo(self, org, repo, member):
         self.repos.update(
-            {'_id.org': org, '_id.repo': repo},
+            {
+                '_id.org': org,
+                '_id.repo': repo
+            },
             {
                 '$pull':
                 {
@@ -433,8 +477,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '_id': 1,
@@ -445,7 +495,10 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def create_instance(self, org, repo, hash, branch, title):
         self.repos.update_one(
-            { '_id.org': org, '_id.repo': repo },
+            {
+                '_id.org': org,
+                '_id.repo': repo
+            },
             { 
                 '$push': 
                 {
@@ -471,8 +524,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '$set':
@@ -488,8 +547,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '$set':
@@ -543,13 +608,10 @@ class Database(object, metaclass=ThreadedSingleton):
     def remove_job(self, meta):
         self.jobs.delete_one(
             {
-                '_id':
-                {
-                    'org': meta['org']['id'],
-                    'repo': meta['repo']['id'],
-                    'hash': meta['hash'],
-                    'branch': meta['branch']
-                }
+                '_id.org': meta['org']['id'],
+                '_id.repo': meta['repo']['id'],
+                '_id.hash': meta['hash'],
+                '_id.branch': meta['branch']
             }
         )
 
@@ -602,6 +664,8 @@ def parse_instances(user, user_repos, filter_out=('log',)):
                 ar['name'] = user['name']
             else:
                 ar['name'] = ar['id']
+
+        # TODO(gpascualg): Needs team members
 
         yield repo
 

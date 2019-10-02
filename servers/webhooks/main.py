@@ -62,6 +62,8 @@ def setup_app_routes(app):
                 return GithubMethods.repository(payload)
             elif event == 'member':
                 return GithubMethods.member(payload)
+            elif event == 'team':
+                return GithubMethods.team(payload)
             elif event == 'membership':
                 return GithubMethods.github_membership_webhook(payload)
             elif event == 'team_add':

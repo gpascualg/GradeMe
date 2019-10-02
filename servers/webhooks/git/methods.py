@@ -46,6 +46,16 @@ class GithubMethods(object):
         logger.info(f'Member: {action} {member} in {org}:{repo}')
         return json.dumps({"status": "success"})
 
+    @staticmethod
+    def team(payload):
+        action = payload['action']
+        team = payload['team']['id']
+        org = payload['organization']['id']
+
+        if action == 'created':
+            Database().create_team(org, team)
+        elif action == 'deleted':
+            Database().remove_team(org, team)
 
     @staticmethod
     def github_membership_webhook(payload):

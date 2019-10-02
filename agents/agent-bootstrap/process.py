@@ -22,6 +22,12 @@ from servers.common.database import Database
 from servers.docker import MessageListener
 
 
+exit_code_as_message = [
+    'done',  # 0
+    'tests-not-available',  # 1
+    'execution-error'  # 2
+]
+
 def update_instance(instance, status, results=[]):
     Database().update_instance(
         instance['_id']['org'], 
@@ -89,6 +95,12 @@ def continue_process(instance, data, rabbit_channel):
     
     return docker_id.strip()
 
+def try_int(x):
+    try:
+        return int(x)
+    except:
+        return 0
+
 def on_tick(docker_id):
     is_running = False
     exit_code = -1
@@ -106,7 +118,7 @@ def on_tick(docker_id):
         logs = subprocess.check_output(['docker', 'logs', docker_id], stderr=subprocess.PIPE)
         print(logs)
     
-    return is_running, exit_code
+    return is_running, try_int(exit_code)
 
 
 def main(instance, organization_id, rabbit_channel):
@@ -184,8 +196,10 @@ try:
                 is_running, exit_code = on_tick(docker_id_or_false)
 
             # Done, update info and rm
-            update_instance(instance, 'done' if exit_code == 0 else 'execution-error', results.json())
+            execution_msg = 'execution-error' if exit_code >= len(exit_code_as_message) else exit_code_as_message[exit_code]
+            update_instance(instance, execution_msg, results.json())
             subprocess.call(['docker', 'rm', docker_id_or_false])
+            exitcode = 0
 
 except pymongo.errors.ServerSelectionTimeoutError:
     print("Could not reach MongoDB")

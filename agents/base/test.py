@@ -3,6 +3,7 @@ import unittest
 import logging
 import atexit
 import os
+import sys
 import tempfile
 
 from .docker import MessageSender
@@ -42,16 +43,24 @@ def main():
     # Load tests
     test_loader = unittest.TestLoader()
     test_loader.sortTestMethodsUsing = None
-    testsuite = test_loader.discover('/tests/_/unittest/')
+    exit_code = 0
+    try:
+        testsuite = test_loader.discover('/tests/_/unittest/')
 
-    # Drop privilegies (so /tests is no longer readable)
-    drop_privileges()
+        # Drop privilegies (so /tests is no longer readable)
+        drop_privileges()
 
-    # Run tests
-    unittest.TextTestRunner(verbosity=3).run(testsuite)
+        # Run tests
+        try:
+            unittest.TextTestRunner(verbosity=3).run(testsuite)
+        except:
+            exit_code = 2
+    except:
+        exit_code = 1
 
     # Make sure we close connection
     client.end()
+    return exit_code
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

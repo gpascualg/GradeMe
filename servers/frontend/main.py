@@ -91,7 +91,7 @@ def setup_app_routes(app, github, socketio, debug):
         if g.user is None:
             emit('user-repos', [])
         else:
-            emit('user-repos', Database().user_instances(g.user['_id'], request['search'], request['last']))
+            emit('user-repos', Database().user_instances(g.user, request['search'], request['last']))
 
     @socketio.on('fetch-instance-result')
     def fetch_instances(request):
@@ -100,7 +100,7 @@ def setup_app_routes(app, github, socketio, debug):
             emit('instance-result', None)
         else:
             emit('instance-result', Database().instance_result(
-                g.user['_id'], request['org'], request['repo'], request['branch'], request['hash']))
+                g.user, request['org'], request['repo'], request['branch'], request['hash']))
 
 def listener(messages):
     results = MessageListener('rabbit', 'jobs', messages)
