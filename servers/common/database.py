@@ -477,8 +477,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '_id': 1,
@@ -518,8 +524,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '$set':
@@ -535,8 +547,14 @@ class Database(object, metaclass=ThreadedSingleton):
             {
                 '_id.org': org,
                 '_id.repo': repo,
-                'instances.hash': hash,
-                'instances.branch': branch
+                'instances':
+                {
+                    '$elemMatch':
+                    {
+                        'hash': hash,
+                        'branch': branch
+                    }
+                }
             },
             {
                 '$set':
