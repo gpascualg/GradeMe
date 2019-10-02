@@ -196,7 +196,7 @@ class Database(object, metaclass=ThreadedSingleton):
     
     def get_repository(self, org, repo):
         return self.repos.find_one(
-            {'_id': {'$elemMatch': {'org' : org, 'repo': repo}}}
+            {'_id.org' : org, '_id.repo': repo}
         )
 
     def get_user(self, id):
@@ -227,17 +227,13 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def remove_team(self, org, team):
         self.teams.delete_one({
-            '_id': {
-                '$elemMatch': {
-                    'org': org,
-                    'team': team
-                }
-            }
+            '_id.org': org,
+            '_id.team': team
         })
 
     def add_team_member(self, org, team, member):
         self.teams.update(
-            {'_id': {'$elemMatch': {'org' : org, 'team': team}}},
+            {'_id.org' : org, '_id.team': team},
             {
                 '$addToSet':
                 {
@@ -262,7 +258,7 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def remove_team_member(self, org, team, member):
         self.teams.update_one(
-            {'_id': {'$elemMatch': {'org' : org, 'team': team}}},
+            {'_id.org' : org, '_id.team': team},
             {
                 '$pull':
                 {
@@ -273,7 +269,7 @@ class Database(object, metaclass=ThreadedSingleton):
 
     def add_team_permission(self, org, team, repo):
         self.teams.update_one(
-            {'_id': {'$elemMatch': {'org' : org, 'team': team}}},
+            {'_id.org' : org, '_id.team': team},
             {
                 '$addToSet':
                 {
@@ -283,7 +279,7 @@ class Database(object, metaclass=ThreadedSingleton):
         )
 
         self.repos.update_one(
-            {'_id': {'$elemMatch': {'org' : org, 'repo': repo}}},
+            {'_id.org' : org, '_id.repo': repo},
             {
                 '$addToSet':
                 {
@@ -437,14 +433,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def update_daily_usage(self, org, repo, daily_usage):
         self.repos.update(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                }
+                '_id.org': org,
+                '_id.repo': repo
             },
             {
                 '$set': 
@@ -457,14 +447,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def add_member_to_repo(self, org, repo, member):
         self.repos.update(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                }
+                '_id.org': org,
+                '_id.repo': repo
             },
             {
                 '$addToSet':
@@ -477,14 +461,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def remove_member_from_repo(self, org, repo, member):
         self.repos.update(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                }
+                '_id.org': org,
+                '_id.repo': repo
             },
             {
                 '$pull':
@@ -497,12 +475,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def get_instance(self, org, repo, hash, branch):
         return self.repos.find_one(
             {
-                '_id': {
-                    '$elemMatch': {
-                        'org': org,
-                        'repo': repo
-                    }
-                },
+                '_id.org': org,
+                '_id.repo': repo
                 'instances.hash': hash,
                 'instances.branch': branch
             },
@@ -516,14 +490,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def create_instance(self, org, repo, hash, branch, title):
         self.repos.update_one(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                }
+                '_id.org': org,
+                '_id.repo': repo
             },
             { 
                 '$push': 
@@ -548,14 +516,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def update_instance(self, org, repo, hash, branch, status, results=[]):
         self.repos.update_one(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                },
+                '_id.org': org,
+                '_id.repo': repo,
                 'instances.hash': hash,
                 'instances.branch': branch
             },
@@ -571,14 +533,8 @@ class Database(object, metaclass=ThreadedSingleton):
     def set_instance_log(self, org, repo, hash, branch, log):
         self.repos.update_one(
             {
-                '_id':
-                {
-                    '$elemMatch' :
-                    {
-                        'org': org,
-                        'repo': repo
-                    }
-                },
+                '_id.org': org,
+                '_id.repo': repo,
                 'instances.hash': hash,
                 'instances.branch': branch
             },
@@ -633,15 +589,9 @@ class Database(object, metaclass=ThreadedSingleton):
     def remove_job(self, meta):
         self.jobs.delete_one(
             {
-                '_id':
-                {
-                    '$elemMatch':
-                    {
-                        'org': meta['org']['id'],
-                        'repo': meta['repo']['id'],
-                        'hash': meta['hash']
-                    }
-                }
+                '_id.org': meta['org']['id'],
+                '_id.repo': meta['repo']['id'],
+                '_id.hash': meta['hash']
             }
         )
 
