@@ -476,7 +476,7 @@ class Database(object, metaclass=ThreadedSingleton):
         return self.repos.find_one(
             {
                 '_id.org': org,
-                '_id.repo': repo
+                '_id.repo': repo,
                 'instances.hash': hash,
                 'instances.branch': branch
             },
