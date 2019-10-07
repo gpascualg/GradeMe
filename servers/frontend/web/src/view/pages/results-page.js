@@ -34,11 +34,11 @@ function color_from_result(score, total, result) {
             return 'gray';
         }
 
-        if (score < total) {
-            return result ? 'orange' : 'red';
+        if (!result) {
+            return 'red';
         }
-
-        return 'green';
+        
+        return (score < total) ? 'orange' : 'green';
     })(score, total, result);
 }
 
